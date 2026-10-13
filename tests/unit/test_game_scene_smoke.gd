@@ -27,16 +27,16 @@ func after_each() -> void:
 func _start_game() -> Node:
 	_scene = (load("res://scenes/main/game.tscn") as PackedScene).instantiate()
 	add_child(_scene)
-	var terrain: TestTerrain = _scene.get_node("Terrain")
-	await wait_until(func() -> bool: return terrain.is_built and _scene.get("session") != null, 10.0)
+	await wait_until(func() -> bool: return _scene.get("session") != null and bool(_scene.call("is_world_ready")), 20.0)
 	return _scene
 
 
 func test_game_scene_builds_terrain_and_player_lands() -> void:
 	await _start_game()
-	var terrain: TestTerrain = _scene.get_node("Terrain")
-	assert_true(terrain.is_built, "ландшафт построен")
-	assert_gt(terrain.resource_field.size(), 100, "ресурсные узлы расставлены")
+	var terrain: WorldStreamer = _scene.get_node("World")
+	assert_true(terrain.is_built, "раскладка мира построена")
+	assert_gt(terrain.resource_field.size(), 3000, "ресурсные узлы расставлены по всему острову")
+	assert_gt(terrain.loaded_count(), 0, "чанки вокруг игрока подгружены")
 	var player: PlayerController = _scene.get_node("Player")
 	await wait_physics_frames(90)
 	assert_true(player.is_on_floor(), "персонаж стоит на земле")
@@ -60,15 +60,17 @@ func test_gather_in_scene_then_save_and_continue() -> void:
 	var session: SurvivalSession = _scene.get("session")
 	var player: PlayerController = _scene.get_node("Player")
 	await wait_physics_frames(30)
-	# Ставим игрока перед ближайшим деревом и смотрим на него.
+	# Ставим игрока перед ближайшим к точке высадки деревом и смотрим на него.
 	var f: ResourceField = session.resources
 	var tree: int = -1
+	var sp: Vector3 = session.spawn_point
 	for i: int in f.size():
-		if f.item_of(i) == "wood" and (tree == -1 or f.positions[i].length() < f.positions[tree].length()):
+		if f.item_of(i) == "wood" and (tree == -1 or f.positions[i].distance_to(sp) < f.positions[tree].distance_to(sp)):
 			tree = i
 	var c: Vector3 = f.hit_center(tree)
 	var stand: Vector3 = f.positions[tree] + Vector3(0.0, 0.0, 2.0)
-	player.activate_at(stand + Vector3(0.0, 0.2, 0.0))
+	stand.y = session.terrain.height_at(stand.x, stand.z)
+	await _teleport(stand + Vector3(0.0, 0.3, 0.0))
 	player.set_look(0.0, 0.0)
 	await wait_physics_frames(20)
 	var cam: Camera3D = _scene.get_node("Player/Head/Camera")
@@ -140,3 +142,12 @@ func test_inventory_tap_tap_and_drop_move_items() -> void:
 	back.call("_drop_data", Vector2.ZERO, {"inv_slot": 3})
 	assert_eq(session.inventory.slot_id(from + 5), "wood", "перенос перетаскиванием")
 	_scene.call("_toggle_inventory")
+
+## Перенести персонажа в pos, дождавшись подгрузки чанка со столкновениями (рельеф и деревья).
+func _teleport(pos: Vector3) -> void:
+	var p: PlayerController = _scene.get_node("Player")
+	p.deactivate()
+	p.global_position = pos
+	var w: WorldStreamer = _scene.get_node("World")
+	await wait_until(func() -> bool: return w.is_collision_ready(pos) and w.colliders_ready(pos), 15.0)
+	p.activate_at(pos)

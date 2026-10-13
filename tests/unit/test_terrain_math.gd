@@ -27,6 +27,6 @@ func test_heights_within_amplitude() -> void:
 
 
 func test_config_from_data_file() -> void:
-	var cfg: Dictionary = JsonData.load_dict("res://data/balance/test_terrain.json")
+	var cfg: Dictionary = JsonData.load_dict("res://tests/data/small_map.json")
 	var t: TerrainMath = TerrainMath.from_config(cfg)
 	assert_eq(t.seed_value, int(cfg["seed"]))

@@ -47,7 +47,7 @@ func test_preset_names_have_translations() -> void:
 
 func test_data_files_parse() -> void:
 	for p: String in [
-		"res://data/balance/quality_presets.json", "res://data/balance/player.json", "res://data/balance/test_terrain.json",
+		"res://data/balance/quality_presets.json", "res://data/balance/player.json", "res://data/balance/world.json", "res://data/balance/animals.json",
 		"res://data/balance/survival.json", "res://data/balance/day_night.json", "res://data/balance/resources.json",
 		"res://data/balance/deployables.json", "res://data/balance/game.json", "res://data/balance/building.json",
 		"res://data/items/items.json", "res://data/recipes/recipes.json",

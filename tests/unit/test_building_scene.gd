@@ -28,8 +28,7 @@ func after_each() -> void:
 func _start_game() -> Node:
 	_scene = (load("res://scenes/main/game.tscn") as PackedScene).instantiate()
 	add_child(_scene)
-	var terrain: TestTerrain = _scene.get_node("Terrain")
-	await wait_until(func() -> bool: return terrain.is_built and _scene.get("session") != null, 10.0)
+	await wait_until(func() -> bool: return _scene.get("session") != null and bool(_scene.call("is_world_ready")), 20.0)
 	await wait_physics_frames(10)
 	return _scene
 
@@ -46,21 +45,22 @@ func test_player_cannot_walk_through_tree() -> void:
 	SaveGame.delete_slot(SaveGame.MAIN_SLOT)
 	await _start_game()
 	var s: SurvivalSession = _session()
-	var view: ResourceView = _scene.get_node("Resources")
-	assert_gt(view.active_collider_count(), 200, "у деревьев и камней есть столкновения")
-	# Самое ровное место у дерева: ищем дерево с пологим склоном к югу.
+	# Самое ровное место у дерева: ищем ближайшее к точке высадки дерево с пологим склоном к югу.
 	var f: ResourceField = s.resources
 	var tree: int = -1
+	var sp: Vector3 = s.spawn_point
 	for i: int in f.size():
 		if f.item_of(i) != "wood":
 			continue
 		var p: Vector3 = f.positions[i]
-		if absf(s.terrain.height_at(p.x, p.z + 3.0) - p.y) < 0.4 and (tree == -1 or p.length() < f.positions[tree].length()):
+		if absf(s.terrain.height_at(p.x, p.z + 3.0) - p.y) < 0.4 and (tree == -1 or p.distance_to(sp) < f.positions[tree].distance_to(sp)):
 			tree = i
 	assert_ne(tree, -1)
 	var tp: Vector3 = f.positions[tree]
+	await _teleport(Vector3(tp.x, s.terrain.height_at(tp.x, tp.z + 3.0) + 0.3, tp.z + 3.0))
+	var w: WorldStreamer = _scene.get_node("World")
+	assert_gt(w.active_collider_count(), 0, "у деревьев и камней ближних чанков есть столкновения")
 	var p: PlayerController = _player()
-	p.activate_at(Vector3(tp.x, s.terrain.height_at(tp.x, tp.z + 3.0) + 0.3, tp.z + 3.0))
 	p.set_look(0.0, 0.0)
 	await wait_physics_frames(20)
 	Input.action_press(&"move_forward")
@@ -72,8 +72,8 @@ func test_player_cannot_walk_through_tree() -> void:
 
 
 func _flat_cell(s: SurvivalSession) -> Vector2i:
-	# Клетка у точки появления (там ровно и нет деревьев).
-	return s.building.cell_of(1.5, -4.5)
+	# Клетка у точки высадки, вглубь острова (там ровная площадка и нет деревьев).
+	return s.building.cell_of(s.spawn_point.x + 1.5, s.spawn_point.z - 4.5)
 
 
 func test_build_mode_places_foundation_by_ghost() -> void:
@@ -230,3 +230,12 @@ func test_save_and_continue_keeps_buildings() -> void:
 	assert_eq(view.find_children("Body_*", "StaticBody3D", false, false).size(), 2, "тела фундамента и проёма")
 	assert_eq(view.find_children("Door_*", "Node3D", false, false).size(), 1, "дверь")
 	SaveGame.delete_slot(SaveGame.MAIN_SLOT)
+
+## Перенести персонажа в pos, дождавшись подгрузки чанка со столкновениями (рельеф и деревья).
+func _teleport(pos: Vector3) -> void:
+	var p: PlayerController = _scene.get_node("Player")
+	p.deactivate()
+	p.global_position = pos
+	var w: WorldStreamer = _scene.get_node("World")
+	await wait_until(func() -> bool: return w.is_collision_ready(pos) and w.colliders_ready(pos), 15.0)
+	p.activate_at(pos)

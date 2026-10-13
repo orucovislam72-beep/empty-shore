@@ -11,7 +11,7 @@ var water: float
 
 
 func _new_session() -> SurvivalSession:
-	var tcfg: Dictionary = JsonData.load_dict("res://data/balance/test_terrain.json")
+	var tcfg: Dictionary = JsonData.load_dict("res://tests/data/small_map.json")
 	terrain = TerrainMath.from_config(tcfg)
 	water = JsonData.get_float(tcfg, "water_level", -4.0)
 	var half: float = JsonData.get_float(tcfg, "size_m", 256.0) * 0.5

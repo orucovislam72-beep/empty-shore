@@ -260,12 +260,14 @@ func test_demolish_refunds_half_and_lock() -> void:
 	assert_eq(s.inventory.count_of("code_lock"), 1, "замок вернулся")
 
 
-func test_save_v1_migrates_to_v2() -> void:
+## С этапа 3 цепочка идёт до v3: детали и объекты лежат в разделе chunks.
+func test_save_v1_migrates_to_v3() -> void:
 	var v1: Dictionary = {"world": {"seed": 1}, "deployables": {"objects": [["campfire", 5.0, 0.0, 5.0, 0.0, 30.0]]}}
 	var m: SaveMigrator = SaveGame._make_migrator()
 	var res: Dictionary = m.migrate(v1, 1)
 	assert_true(res["ok"])
-	assert_true((res["data"] as Dictionary).has("building"))
+	assert_true((res["data"] as Dictionary).has("chunks"), "v1 → v2 → v3: мир по чанкам")
+	assert_false((res["data"] as Dictionary).has("building"), "детали перенесены в чанки")
 	var s2: SurvivalSession = _new_session()
 	var w: PackedStringArray = s2.from_dict(res["data"])
 	assert_false(w.has("building_skipped_1"))
