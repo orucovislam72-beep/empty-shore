@@ -9,7 +9,13 @@
 | GUT — Godot Unit Test 9.7.1 | Tom "Butch" Wesley и участники | https://github.com/bitwes/Gut | MIT | `addons/gut`, тесты | нет (исключён в пресетах экспорта) |
 | Шрифты GUT: Anonymous Pro, Courier Prime, Lobster Two | авторы шрифтов, см. `addons/gut/fonts/OFL.txt` | https://github.com/bitwes/Gut/tree/main/addons/gut/fonts | OFL 1.1 | панель GUT в редакторе | нет |
 
-Собственные ассеты проекта (созданы для «Пустого Берега»): иконка `assets/icons/app_icon.svg`, тема интерфейса
-`assets/ui_theme.tres`, процедурные модели травы, деревьев и камней (генерируются кодом в `scripts/world/test_terrain.gd`).
+| Иконка приложения «топор в скале и волна» (`assets/icons/source/icon_*.png`, производные `assets/icons/app_icon_*.png`, `adaptive_*_432.png`) | сгенерирована для проекта: Viktor AI image generation (модель gpt-image-2.5-sunburst, OpenAI GPT Image); уменьшение — Pillow (LANCZOS) | https://openai.com/policies/terms-of-use | собственная иконка проекта (сгенерирована по заказу; права на выход — у пользователя по условиям OpenAI), см. `docs/LICENSES.md` | иконка проекта и Android (обычная и адаптивная) | да |
 
-Внешних моделей, текстур и звуков на этапе 0 нет.
+Собственные ассеты проекта (созданы для «Пустого Берега», без сторонних источников):
+- тема интерфейса `assets/ui_theme.tres`;
+- иконки предметов `assets/icons/items/*.svg` и показателей `assets/icons/hud/*.svg` — нарисованы вручную в SVG (плоский стиль);
+- процедурные модели: трава, вода (`scripts/world/test_terrain.gd`), деревья, камни, рудные камни, кусты
+  (`scripts/world/resource_view.gd`), костёр и верстак (`scripts/world/deployable_view.gd`), топор и кирка в руке
+  (`scripts/player/held_item_view.gd`) — строятся кодом из примитивов Godot.
+
+Внешних моделей, текстур и звуков на этапе 1 нет. Иконка этапа 0 (`app_icon.svg`) заменена сгенерированной иконкой.
