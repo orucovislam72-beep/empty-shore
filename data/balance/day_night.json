@@ -1,0 +1,18 @@
+{
+	"_comment": "Смена дня и ночи. day_length_min — минут реального времени на игровые сутки. keys — опорные точки по часам, между ними линейная интерполяция (по кругу). Ночь не делаем полностью тёмной: игра на маленьком экране должна оставаться читаемой.",
+	"day_length_min": 30.0,
+	"start_hour": 8.0,
+	"sunrise_hour": 6.0,
+	"sunset_hour": 18.0,
+	"max_sun_elevation_deg": 62.0,
+	"shadows_min_elevation_deg": 6.0,
+	"keys": [
+		{"hour": 0.0, "sun": 0.0, "ambient": 0.22, "sky_top": "#141b2a", "sky_horizon": "#222c3c", "fog": "#1c2431", "sun_color": "#8fa6c9"},
+		{"hour": 5.0, "sun": 0.0, "ambient": 0.24, "sky_top": "#1a2234", "sky_horizon": "#2d3646", "fog": "#252d3a", "sun_color": "#8fa6c9"},
+		{"hour": 6.5, "sun": 0.55, "ambient": 0.3, "sky_top": "#4f6a86", "sky_horizon": "#d9a27a", "fog": "#9a8f86", "sun_color": "#ffc38a"},
+		{"hour": 9.0, "sun": 1.0, "ambient": 0.35, "sky_top": "#617fa0", "sky_horizon": "#a8b8c2", "fog": "#a8b8c2", "sun_color": "#fff5e0"},
+		{"hour": 15.0, "sun": 1.0, "ambient": 0.35, "sky_top": "#617fa0", "sky_horizon": "#a8b8c2", "fog": "#a8b8c2", "sun_color": "#fff5e0"},
+		{"hour": 17.5, "sun": 0.6, "ambient": 0.3, "sky_top": "#4c6280", "sky_horizon": "#d39568", "fog": "#9b8a7e", "sun_color": "#ffb47a"},
+		{"hour": 19.0, "sun": 0.0, "ambient": 0.25, "sky_top": "#20293b", "sky_horizon": "#3b3b4a", "fog": "#2c303c", "sun_color": "#8fa6c9"}
+	]
+}

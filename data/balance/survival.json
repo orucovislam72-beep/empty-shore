@@ -1,0 +1,23 @@
+{
+	"_comment": "Выживание: шкалы 0..max, скорости — в единицах за минуту реального времени.",
+	"max_health": 100.0,
+	"max_hunger": 100.0,
+	"max_thirst": 100.0,
+	"start_health": 100.0,
+	"start_hunger": 75.0,
+	"start_thirst": 75.0,
+	"hunger_per_min": 1.5,
+	"thirst_per_min": 2.2,
+	"starve_damage_per_min": 4.0,
+	"dehydrate_damage_per_min": 5.0,
+	"regen_per_min": 2.0,
+	"regen_min_hunger": 40.0,
+	"regen_min_thirst": 40.0,
+	"drink_amount": 20.0,
+	"drink_cooldown_s": 0.8,
+	"fall_safe_speed": 10.0,
+	"fall_damage_per_mps": 9.0,
+	"respawn_health": 60.0,
+	"respawn_hunger": 50.0,
+	"respawn_thirst": 50.0
+}
