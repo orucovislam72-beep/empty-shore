@@ -3,6 +3,9 @@ extends CharacterBody3D
 ## Персонаж от первого лица. Ввод: действия InputMap (клавиатура, геймпад и сенсорный стик
 ## через Input.action_press), обзор — мышь, правый стик геймпада и свайп (Events.look_input).
 
+## Приземление: скорость падения в момент касания земли, м/с (для урона от падения).
+signal landed(fall_speed: float)
+
 const CONFIG_PATH: String = "res://data/balance/player.json"
 
 @export var head_path: NodePath = ^"Head"
@@ -55,6 +58,27 @@ func activate_at(spawn: Vector3) -> void:
 	global_position = spawn
 	velocity = Vector3.ZERO
 	_active = true
+
+
+## Остановить персонажа (гибель): ни движения, ни физики.
+func deactivate() -> void:
+	_active = false
+	velocity = Vector3.ZERO
+	_set_autorun(false)
+
+
+func is_active() -> bool:
+	return _active
+
+
+## Поворот игрока (рысканье) и наклон головы, радианы.
+func set_look(yaw: float, pitch: float) -> void:
+	rotation.y = yaw
+	_head.rotation.x = clampf(pitch, -_pitch_limit, _pitch_limit)
+
+
+func get_pitch() -> float:
+	return _head.rotation.x
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -130,4 +154,8 @@ func _physics_process(delta: float) -> void:
 			velocity.y = _jump_velocity
 	else:
 		velocity.y -= _gravity * delta
+	var was_on_floor: bool = is_on_floor()
+	var fall_speed: float = -velocity.y
 	move_and_slide()
+	if not was_on_floor and is_on_floor() and fall_speed > 0.0:
+		landed.emit(fall_speed)
