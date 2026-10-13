@@ -54,6 +54,36 @@ func test_autoloads_present() -> void:
 		assert_not_null(get_tree().root.get_node_or_null(n), n)
 
 
+func test_android_back_button_does_not_quit() -> void:
+	assert_false(ProjectSettings.get_setting("application/config/quit_on_go_back"))
+
+
+func test_android_export_presets() -> void:
+	var cfg: ConfigFile = ConfigFile.new()
+	assert_eq(cfg.load("res://export_presets.cfg"), OK)
+	var names: Dictionary = {}
+	for section: String in cfg.get_sections():
+		if section.ends_with(".options") or not section.begins_with("preset."):
+			continue
+		names[cfg.get_value(section, "name")] = section
+		assert_eq(cfg.get_value(section, "platform"), "Android")
+		assert_true(String(cfg.get_value(section, "include_filter")).contains("data/*.json"), "JSON-данные попадают в сборку")
+		assert_true(String(cfg.get_value(section, "exclude_filter")).contains("addons/gut/*"), "GUT не попадает в сборку")
+		var opts: String = section + ".options"
+		assert_eq(cfg.get_value(opts, "package/unique_name"), "com.emptyshore.game")
+		assert_true(cfg.get_value(opts, "architectures/arm64-v8a"))
+		assert_false(cfg.get_value(opts, "architectures/armeabi-v7a"))
+		assert_eq(cfg.get_value(opts, "keystore/release_password"), "", "пароли не хранятся в репозитории")
+		assert_eq(cfg.get_value(opts, "keystore/release"), "", "путь к ключу — только из окружения")
+	assert_true(names.has("Android APK"))
+	assert_true(names.has("Android AAB"))
+	var aab: String = String(names.get("Android AAB", "")) + ".options"
+	assert_true(cfg.get_value(aab, "gradle_build/use_gradle_build"))
+	assert_eq(cfg.get_value(aab, "gradle_build/export_format"), 1)
+	assert_eq(cfg.get_value(aab, "gradle_build/min_sdk"), "24")
+	assert_eq(cfg.get_value(aab, "gradle_build/target_sdk"), "36")
+
+
 ## Ищет строковые литералы вида "UPPER_CASE_KEY" с известными префиксами.
 func _collect_keys(dir_path: String) -> PackedStringArray:
 	var out: PackedStringArray = PackedStringArray()
