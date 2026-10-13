@@ -45,6 +45,7 @@ func _ready() -> void:
 	Events.settings_changed.connect(_layout)
 	Events.interact_target_changed.connect(_on_interact_target)
 	Events.primary_action_changed.connect(_on_primary_action)
+	Events.build_mode_changed.connect(_on_build_mode)
 	_layout()
 
 
@@ -59,6 +60,13 @@ func _on_interact_target(label: String) -> void:
 			b.visible = not label.is_empty()
 			if not label.is_empty():
 				b.set_label(label)
+
+
+## В режиме строительства «Перезар.» работает как «Повернуть» (то же действие reload).
+func _on_build_mode(enabled: bool) -> void:
+	for b: TouchButton in _buttons:
+		if b.action == &"reload":
+			b.set_label("HUD_ROTATE" if enabled else "HUD_RELOAD")
 
 
 func _on_primary_action(label: String) -> void:

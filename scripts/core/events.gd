@@ -22,3 +22,5 @@ signal debug_overlay_toggled
 signal interact_target_changed(label: String)
 ## Подпись основной кнопки по активному предмету («Удар», «Съесть», «Поставить») — ключ перевода.
 signal primary_action_changed(label: String)
+## Режим строительства включён/выключен (кнопка «Перезар.» становится «Повернуть»).
+signal build_mode_changed(enabled: bool)

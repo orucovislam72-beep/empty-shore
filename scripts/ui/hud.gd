@@ -173,6 +173,11 @@ func bind(session: SurvivalSession, icons: ItemIcons) -> void:
 	_apply_settings()
 
 
+## Касания внутри control (например, панели стройки) не уходят в стик и обзор.
+func add_touch_passthrough(control: Control) -> void:
+	_touch.add_passthrough(control)
+
+
 func set_stats(health: float, hunger: float, thirst: float) -> void:
 	_stats.set_values(health, hunger, thirst)
 
