@@ -2,6 +2,8 @@ extends Node3D
 ## Корень игровой сцены: связывает ландшафт, персонажа, HUD, меню и игровую сессию выживания.
 ## С этапа 2 — режим строительства (призрак детали, панель, «Поставить»/«Повернуть»), двери с
 ## кодовыми замками (экран цифр), ящики и знамя базы (экран хранилища).
+## С этапа 3 — мир по чанкам (WorldStreamer), животные, снаряды, лут, мешок при гибели, выбор точки
+## возрождения; персонаж включается, когда под ним готовы столкновения рельефа.
 ## Вся игровая логика — в SurvivalSession (без сцен); здесь только передача ввода
 ## в сессию и отображение её состояния. Узлы общаются через сигналы; ссылки только на своих детей.
 
@@ -12,8 +14,10 @@ const TARGET_INTERVAL: float = 0.1
 const HUD_INTERVAL: float = 0.25
 const LIGHT_INTERVAL: float = 0.1
 
-@onready var _terrain: TestTerrain = $Terrain
-@onready var _resources_view: ResourceView = $Resources
+@onready var _world: WorldStreamer = $World
+@onready var _animal_view: AnimalView = $Animals
+@onready var _projectile_view: ProjectileView = $Projectiles
+@onready var _container_view: ContainerView = $Containers
 @onready var _deploy_view: DeployableView = $Deployables
 @onready var _player: PlayerController = $Player
 @onready var _camera: Camera3D = $Player/Head/Camera
@@ -49,6 +53,15 @@ var _build_mat: int = 0
 var _build_rot: int = 0
 var _build_target: int = -1
 var _placement: BuildingGrid.Placement = BuildingGrid.Placement.new()
+## Ждём столкновений рельефа под точкой появления, чтобы включить персонажа.
+var _pending_spawn: bool = false
+var _pending_pos: Vector3 = Vector3.ZERO
+var _pending_loaded: bool = false
+var _first_spawn: bool = true
+var _world_ready: bool = false
+var _base_fov: float = 75.0
+var _death_t: float = 0.0
+var _last_ammo: Vector3i = Vector3i(-9, -9, -9)
 
 
 func _ready() -> void:
@@ -67,14 +80,15 @@ func _ready() -> void:
 	_build_panel.material_selected.connect(_on_build_material)
 	_build_panel.action_pressed.connect(_on_build_action)
 	_player.landed.connect(_on_player_landed)
-	_terrain.built.connect(_on_terrain_built)
+	_world.layout_ready.connect(_on_terrain_built)
+	_base_fov = _camera.fov
 	if _env.environment != null and _env.environment.sky != null:
 		_sky = _env.environment.sky.sky_material as ProceduralSkyMaterial
 	_apply_settings()
 
 
 func _on_terrain_built() -> void:
-	session = SurvivalSession.create(_terrain.terrain_math, _terrain.resource_field, _terrain.water_level)
+	session = SurvivalSession.create(_world.gen, _world.resource_field, _world.water_level, _world.containers)
 	var loaded: bool = false
 	if SaveGame.continue_requested and SaveGame.has_slot(SaveGame.MAIN_SLOT):
 		var data: Dictionary = SaveGame.load_slot(SaveGame.MAIN_SLOT)
@@ -88,8 +102,10 @@ func _on_terrain_built() -> void:
 	SaveGame.continue_requested = false
 
 	var icons: ItemIcons = ItemIcons.new(session.items)
-	_resources_view.build(session.resources)
 	_deploy_view.bind(session.deployables)
+	_animal_view.bind(session.animals)
+	_projectile_view.bind(session.projectiles)
+	_container_view.bind(session.containers)
 	_hud.bind(session, icons)
 	_inventory.bind(session, icons)
 	_storage.bind(session, icons)
@@ -102,8 +118,33 @@ func _on_terrain_built() -> void:
 	session.respawned.connect(_on_respawned)
 	session.active_slot_changed.connect(_on_active_slot_changed)
 	session.inventory.changed.connect(_on_inventory_changed)
+	session.player_hurt.connect(_on_player_hurt)
+	session.hit_confirmed.connect(_on_hit_confirmed)
+	session.fired.connect(_on_fired)
+	_apply_settings()
+	# Персонаж включится, когда под ним будут готовы столкновения (см. _process).
+	_pending_loaded = loaded
+	_begin_spawn(session.player_position)
 
-	_player.activate_at(session.player_position + Vector3(0.0, 0.3, 0.0))
+
+## Подождать подгрузки чанка под точкой pos, затем поставить туда персонажа.
+func _begin_spawn(pos: Vector3) -> void:
+	_pending_spawn = true
+	_pending_pos = pos
+	_world.set_focus(pos)
+	_world.set_playing(false)
+
+
+## Мир под игроком готов — включаем персонажа (первый раз — сообщения и проверка гибели).
+func _finish_spawn() -> void:
+	_pending_spawn = false
+	_player.activate_at(_pending_pos + Vector3(0.0, 0.3, 0.0))
+	if not _first_spawn:
+		_hud.set_touch_enabled(true)
+		_autosave_sync()
+		return
+	_first_spawn = false
+	var loaded: bool = _pending_loaded
 	if loaded:
 		_player.set_look(session.player_yaw, session.player_pitch)
 		Events.toast_requested.emit(tr("TOAST_GAME_LOADED"))
@@ -114,8 +155,14 @@ func _on_terrain_built() -> void:
 	_auto_quality.reset()
 	if session.stats.is_dead():
 		_on_player_died("other")
-	print("[game] world ready (%s): %d ms since engine start" % ["loaded" if loaded else "new", Time.get_ticks_msec()])
+	_world_ready = true
+	print("[game] world ready (%s): %d ms since engine start, %d chunks built" % ["loaded" if loaded else "new", Time.get_ticks_msec(), _world.loaded_count()])
 	session_ready.emit()
+
+
+## Мир загружен и персонаж стоит на земле (для тестов и инструментов).
+func is_world_ready() -> bool:
+	return _world_ready and not _pending_spawn
 
 
 func _apply_settings() -> void:
@@ -124,9 +171,9 @@ func _apply_settings() -> void:
 	_camera.far = dist
 	_shadows_setting = s.effective_shadows()
 	_sun.directional_shadow_max_distance = minf(dist, 60.0)
-	_terrain.set_draw_distance(dist)
-	_terrain.set_grass_density(s.effective_grass_density())
-	_resources_view.set_draw_distance(dist)
+	_world.set_draw_distance(dist)
+	_world.set_grass_density(s.effective_grass_density())
+	_animal_view.set_draw_distance(dist)
 	_building_view.set_draw_distance(dist)
 	var env: Environment = _env.environment
 	if env != null:
@@ -152,8 +199,20 @@ func _process(delta: float) -> void:
 			Events.toast_requested.emit(tr("TOAST_QUALITY_LOWERED") % tr(name_key))
 	if session == null:
 		return
+	if _pending_spawn:
+		if _world.is_collision_ready(_pending_pos):
+			_finish_spawn()
+		return
+	if _death.visible:
+		_death_t -= delta
+		if _death_t <= 0.0:
+			_death_t = 0.5
+			_death.refresh_points(session.respawn_points())
 	session.tick(delta)
+	_keep_in_bounds()
 	var feet: Vector3 = _player.global_position
+	_world.set_focus(feet)
+	_world.set_playing(_player.is_active())
 	var yaw: float = _player.rotation.y
 	session.set_player_pose(feet, yaw, _player.get_pitch())
 
@@ -165,10 +224,18 @@ func _process(delta: float) -> void:
 		if playing and Input.is_action_just_pressed("reload"):
 			_build_rot = (_build_rot + 1) % 4
 			_target_t = 0.0
-	elif playing and Input.is_action_pressed("attack") and session.can_swing():
-		var r: SurvivalSession.Primary = session.primary(_camera.global_position, -_camera.global_basis.z, feet, yaw)
-		if r == SurvivalSession.Primary.SWING:
-			_held.swing(session.items.swing_time(session.active_item()))
+	else:
+		var ranged: bool = session.items.is_ranged(session.active_item())
+		session.aiming = playing and ranged and Input.is_action_pressed("aim")
+		var want_fov: float = _base_fov * (0.65 if session.aiming else 1.0)
+		if not is_equal_approx(_camera.fov, want_fov):
+			_camera.fov = move_toward(_camera.fov, want_fov, 120.0 * delta)
+		if playing and Input.is_action_just_pressed("reload") and session.reload():
+			_hud.add_feed(tr("HUD_RELOADING"))
+		if playing and Input.is_action_pressed("attack") and session.can_swing():
+			var r: SurvivalSession.Primary = session.primary(_camera.global_position, -_camera.global_basis.z, feet, yaw)
+			if r == SurvivalSession.Primary.SWING:
+				_held.swing(session.items.swing_time(session.active_item()))
 
 	_target_t -= delta
 	if _target_t <= 0.0:
@@ -181,6 +248,7 @@ func _process(delta: float) -> void:
 		_hud.set_stats(st.health / st.max_health, st.hunger / st.max_hunger, st.thirst / st.max_thirst)
 		var minutes: int = int(session.clock.time_hours * 60.0)
 		_hud.set_clock(tr("HUD_CLOCK") % [session.clock.day, minutes / 60, minutes % 60])
+		_update_ammo()
 	_light_t -= delta
 	if _light_t <= 0.0:
 		_light_t = LIGHT_INTERVAL
@@ -195,9 +263,13 @@ func _process(delta: float) -> void:
 func _update_target(feet: Vector3, yaw: float) -> void:
 	var target: int = session.resources.find_target(_camera.global_position, -_camera.global_basis.z)
 	var piece: int = session.build_target()
-	if target != _last_target or target >= 0 or piece >= 0:
+	var animal: int = session.animals.find_hit(_camera.global_position, -_camera.global_basis.z, 40.0)
+	if target != _last_target or target >= 0 or piece >= 0 or animal >= 0:
 		_last_target = target
-		if target >= 0:
+		if animal >= 0 and (target < 0 or session.animals.last_hit_t < 3.0):
+			var an: AnimalSim = session.animals
+			_hud.set_target(tr("HUD_TARGET_ANIMAL") % [tr(String(an.def_of(animal).get("name", ""))), int(ceil(an.hp[animal])), int(an.max_hp_of(animal))])
+		elif target >= 0:
 			var f: ResourceField = session.resources
 			_hud.set_target(tr("HUD_TARGET") % [tr(f.name_key_of(target)), f.remaining[target], f.stock_of(target)])
 		elif piece >= 0:
@@ -205,6 +277,9 @@ func _update_target(feet: Vector3, yaw: float) -> void:
 		else:
 			_hud.set_target("")
 	var ik: int = session.interact_kind(feet, yaw)
+	if ik == SurvivalSession.Interact.LOOT:
+		# Подпись зависит от контейнера: обыскать, мешок, разделать.
+		ik = 100 + _loot_label_index(session.interact_target())
 	if ik != _last_interact:
 		_last_interact = ik
 		Events.interact_target_changed.emit(_interact_label(ik))
@@ -219,6 +294,8 @@ func _update_target(feet: Vector3, yaw: float) -> void:
 				Events.primary_action_changed.emit("HUD_EAT")
 			SurvivalSession.Primary.PLACE:
 				Events.primary_action_changed.emit("HUD_PLACE")
+			SurvivalSession.Primary.SHOOT:
+				Events.primary_action_changed.emit("HUD_SHOOT")
 			_:
 				Events.primary_action_changed.emit("HUD_ATTACK")
 
@@ -239,7 +316,47 @@ func _interact_label(ik: int) -> String:
 			return "HUD_BOX"
 		SurvivalSession.Interact.CLAIM:
 			return "HUD_BANNER"
+		100:
+			return "HUD_SEARCH"
+		101:
+			return "HUD_BAG"
+		102:
+			return "HUD_CORPSE"
 	return ""
+
+
+func _loot_label_index(handle: int) -> int:
+	var k: String = session.containers.kind_of(handle)
+	if k == WorldContainers.KIND_BAG:
+		return 1
+	if k.begins_with(WorldContainers.CORPSE_PREFIX):
+		return 2
+	return 0
+
+
+## Патроны активного оружия над быстрой панелью (4 раза в секунду, строка — только при изменении).
+func _update_ammo() -> void:
+	var a: Vector2i = session.ammo_status()
+	var key: Vector3i = Vector3i(a.x, a.y, 1 if session.is_reloading() else 0)
+	if key == _last_ammo:
+		return
+	_last_ammo = key
+	if a.y < 0:
+		_hud.set_ammo("")
+	elif session.is_reloading():
+		_hud.set_ammo(tr("HUD_RELOADING"))
+	elif a.x >= 0:
+		_hud.set_ammo((tr("HUD_AMMO_MAG") % [a.x, session.items.magazine_size(session.active_item())]) + "   " + tr("HUD_AMMO_SPARE") % a.y)
+	else:
+		_hud.set_ammo(tr("HUD_AMMO_SPARE") % a.y)
+
+
+## Не даём уйти за край карты (дальше — только океан).
+func _keep_in_bounds() -> void:
+	var lim: float = _world.half_size - JsonData.get_float(session._cfg, "world_size_limit_margin_m", 6.0)
+	var p: Vector3 = _player.global_position
+	if absf(p.x) > lim or absf(p.z) > lim:
+		_player.global_position = Vector3(clampf(p.x, -lim, lim), p.y, clampf(p.z, -lim, lim))
 
 
 func _piece_label(id: int) -> String:
@@ -353,6 +470,9 @@ func _do_interact() -> void:
 		SurvivalSession.Interact.STORAGE, SurvivalSession.Interact.CLAIM:
 			_open_screen()
 			_storage.open(target)
+		SurvivalSession.Interact.LOOT:
+			_open_screen()
+			_storage.open_container(target)
 	_target_t = 0.0
 
 
@@ -642,17 +762,48 @@ func _on_player_died(cause: String) -> void:
 	set_build_mode(false)
 	_hud.set_touch_enabled(false)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	_death.show_death(cause)
+	_death_t = 0.5
+	_death.show_death(cause, session.last_bag >= 0 or _has_own_bag(), session.respawn_points())
 
 
-func _on_respawn_requested() -> void:
-	session.respawn()
+func _has_own_bag() -> bool:
+	var c: WorldContainers = session.containers
+	for j: int in c.dynamic_count():
+		if c.d_kind[j] == WorldContainers.KIND_BAG and c.d_owner[j] == session.player_id:
+			return true
+	return false
+
+
+func _on_respawn_requested(point: int) -> void:
+	session.respawn(point)
 
 
 func _on_respawned(pos: Vector3) -> void:
-	_player.activate_at(pos + Vector3(0.0, 0.3, 0.0))
-	_hud.set_touch_enabled(true)
-	_autosave_sync()
+	Events.toast_requested.emit(tr("NOTICE_RESPAWN_COAST" if _is_coast(pos) else "NOTICE_RESPAWN_BAG"))
+	_begin_spawn(pos)
+
+
+func _is_coast(pos: Vector3) -> bool:
+	for p: Vector3 in session.coast_points:
+		if p.is_equal_approx(pos):
+			return true
+	return false
+
+
+func _on_player_hurt(amount: float, cause: String) -> void:
+	_hud.flash_hurt(amount / maxf(session.stats.max_health, 1.0) * 3.0)
+	_hud.add_feed(tr("FEED_HURT") % [tr(String(session.animals.defs[maxi(session.animals.kind_ids.find(cause), 0)].get("name", ""))), int(round(amount))])
+	Settings.haptic(50)
+
+
+func _on_hit_confirmed(_what: int) -> void:
+	_hud.add_feed(tr("FEED_HIT"))
+	Settings.haptic(15)
+
+
+func _on_fired(_weapon: String) -> void:
+	_held.swing(0.25)
+	Settings.haptic(20)
 
 
 func _notification(what: int) -> void:

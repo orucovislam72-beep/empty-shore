@@ -1,6 +1,7 @@
 class_name DebugOverlay
 extends CanvasLayer
-## Отладочная панель: FPS, мс на кадр, память, число объектов, draw calls, треугольники.
+## Отладочная панель: FPS, мс на кадр, память, число объектов, draw calls, треугольники;
+## с этапа 3 — чанки и время их подгрузки на главном потоке, биом.
 ## Текст обновляется 4 раза в секунду (без строковых аллокаций каждый кадр).
 ## Включается в настройках или клавишей F3.
 
@@ -81,4 +82,7 @@ static func build_text(worst_ms: float) -> String:
 		TranslationServer.translate("DEBUG_RENDER") % [draw_calls, prims],
 		TranslationServer.translate("DEBUG_QUALITY") % [s.quality_preset, s.effective_render_scale(), s.effective_fps_limit()],
 	])
+	# Этап 3: подгрузка чанков (сколько, очередь, время главного потока) и биом под игроком.
+	if not WorldStreamer.debug_text.is_empty():
+		lines.append(WorldStreamer.debug_text)
 	return "\n".join(lines)

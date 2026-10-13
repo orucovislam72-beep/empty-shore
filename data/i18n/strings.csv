@@ -1,6 +1,6 @@
 keys,ru
 GAME_TITLE,Пустой Берег
-MENU_SUBTITLE,Этап 2 — строительство
+MENU_SUBTITLE,Этап 3 — мир и бой
 MENU_SETTINGS,Настройки
 MENU_QUIT,Выход
 MENU_VERSION,Версия %s
@@ -115,7 +115,6 @@ DEATH_CAUSE_HUNGER,Причина: голод
 DEATH_CAUSE_THIRST,Причина: жажда
 DEATH_CAUSE_FALL,Причина: падение
 DEATH_CAUSE_OTHER,Здоровье на нуле
-DEATH_ITEMS_LOST,Вещи потеряны. Вы появитесь у места высадки.
 DEATH_RESPAWN,Возродиться
 ITEM_WOOD,Дерево
 ITEM_WOOD_DESC,"Основной материал: инструменты, костёр, верстак. Топливо для костра."
@@ -230,3 +229,62 @@ KEYPAD_ENTER,Введите код замка
 KEYPAD_CHANGE,Новый код из 4 цифр
 KEYPAD_CLEAR,Стереть
 KEYPAD_OK,Готово
+ITEM_STONE_SPEAR,Каменное копьё
+ITEM_STONE_SPEAR_DESC,Длинный удар: достаёт дальше топора. Против зверя лучше инструмента.
+ITEM_BOW,Лук
+ITEM_BOW_DESC,"Стреляет стрелами из инвентаря. «Прицел» уменьшает разброс. Изнашивается с каждым выстрелом."
+ITEM_CRUDE_GUN,Самопал
+ITEM_CRUDE_GUN_DESC,"Однозарядный самодельный ствол. После выстрела — «Перезар.» (нужны патроны)."
+ITEM_ARROW,Стрела
+ITEM_ARROW_DESC,Боеприпас для лука. Ломается при попадании.
+ITEM_GUN_AMMO,Патрон
+ITEM_GUN_AMMO_DESC,Боеприпас для самопала.
+ITEM_MEAT,Сырое мясо
+ITEM_MEAT_DESC,"Немного утоляет голод, но вредит здоровью. Лучше пожарить на костре."
+ITEM_COOKED_MEAT,Жареное мясо
+ITEM_COOKED_MEAT_DESC,Сытная еда. Жарится на горящем костре.
+ITEM_HIDE,Шкура
+ITEM_HIDE_DESC,"Снимается с туш животных. Нужна для лука, спальника и кровати."
+ITEM_SLEEPING_BAG,Спальный мешок
+ITEM_SLEEPING_BAG_DESC,"Ставится на землю. После гибели можно возродиться у него (пауза 5 мин)."
+ITEM_BED,Кровать
+ITEM_BED_DESC,"Точка возрождения с короткой паузой (2 мин). Делается на верстаке."
+DEPLOY_SLEEPING_BAG,Спальный мешок
+DEPLOY_BED,Кровать
+NOTICE_NO_AMMO,Нет боеприпасов: %s
+NOTICE_ANIMAL_KILLED,"Зверь повержен. Подойдите к туше и нажмите «Взять», чтобы разделать."
+NOTICE_RESPAWN_COAST,Вы очнулись на побережье.
+NOTICE_RESPAWN_BAG,Вы возродились у спального места.
+ANIMAL_DEER,Олень
+ANIMAL_WOLF,Волк
+ANIMAL_BEAR,Медведь
+LOOT_CRATE,Ящик с припасами
+LOOT_BARREL,Бочка
+LOOT_CRATE_MILITARY,Военный ящик
+LOOT_BAG,Мешок с вещами
+LOOT_CORPSE,Туша
+HUD_SHOOT,Выстрел
+HUD_SEARCH,Обыскать
+HUD_BAG,Мешок
+HUD_CORPSE,Разделать
+HUD_AMMO_MAG,%d / %d
+HUD_AMMO_SPARE,Запас: %d
+HUD_RELOADING,Перезарядка…
+HUD_TARGET_ANIMAL,%s · %d / %d
+FEED_HIT,Попадание
+FEED_HURT,%s: −%d
+DEATH_CAUSE_WOLF,Причина: волк
+DEATH_CAUSE_BEAR,Причина: медведь
+DEATH_CAUSE_DEER,Причина: олень
+DEATH_ITEMS_IN_BAG,"Вещи остались в мешке на месте гибели (он пролежит 30 минут)."
+DEATH_NO_ITEMS,С собой ничего не было.
+DEATH_RESPAWN_COAST,На побережье
+DEATH_RESPAWN_AT,%s · %d м
+DEATH_RESPAWN_WAIT,%s · через %d с
+DEATH_CHOOSE,Где возродиться?
+BIOME_COAST,побережье
+BIOME_PLAIN,равнина
+BIOME_FOREST,лес
+BIOME_MOUNTAIN,горы
+DEBUG_WORLD,чанки %d (+%d в очереди) | подгрузка %.2f мс (макс. %.2f) | %s
+UI_WORLD_LOADING,Загрузка мира…

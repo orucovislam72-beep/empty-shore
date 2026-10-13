@@ -5,13 +5,15 @@ extends CanvasLayer
 ## перетаскивания). Для знамени ниже — право владения и обслуживание: кто свой, расход в час,
 ## на сколько хватит запаса, кнопки «Стать своим» / «Выйти из своих» / «Сбросить список».
 ## Действия идут через SurvivalSession (она проверяет дистанцию и право).
+## С этапа 3 тот же экран открывает контейнеры мира (open_container): ящики и бочки с лутом,
+## мешок с вещами на месте гибели, туша животного.
 
 signal closed
 
 const SLOT: float = 80.0
 const GAP: int = 6
 const COLS: int = 6
-const MAX_SLOTS: int = 24
+const MAX_SLOTS: int = 36
 
 var _session: SurvivalSession
 var _icons: ItemIcons
@@ -26,6 +28,8 @@ var _join_btn: Button
 var _reset_btn: Button
 var _refresh_t: float = 0.0
 var _bound_storage: ItemStorage
+## Ручка контейнера мира (WorldContainers) или -1 — открыт объект игрока (_index).
+var _container: int = -1
 
 
 func _ready() -> void:
@@ -52,7 +56,37 @@ func open(index: int) -> void:
 	if _session == null or not _session.deployables.has_storage(index):
 		return
 	_index = index
-	var st: ItemStorage = _session.deployables.storages[index]
+	_container = -1
+	_bind(_session.deployables.storages[index])
+	var banner: bool = _session.claims.is_banner(index)
+	_title.text = tr("STORAGE_TITLE_BANNER" if banner else "STORAGE_TITLE_BOX")
+	_claim_box.visible = banner
+	visible = true
+	_refresh_claim()
+	_redraw()
+
+
+## Открыть контейнер мира (лут, мешок, туша) по ручке WorldContainers.
+func open_container(handle: int) -> void:
+	if _session == null:
+		return
+	var st: ItemStorage = _session.containers.storage_of(handle)
+	if st == null:
+		return
+	_index = -1
+	_container = handle
+	_bind(st)
+	_title.text = tr(_session.containers.name_key(handle))
+	_claim_box.visible = false
+	visible = true
+	_redraw()
+
+
+func current_container() -> int:
+	return _container
+
+
+func _bind(st: ItemStorage) -> void:
 	if _bound_storage != null and _bound_storage.changed.is_connected(_redraw):
 		_bound_storage.changed.disconnect(_redraw)
 	_bound_storage = st
@@ -60,12 +94,6 @@ func open(index: int) -> void:
 	for i: int in _box_slots.size():
 		_box_slots[i].bind_storage(st)
 		_box_slots[i].visible = i < st.size()
-	var banner: bool = _session.claims.is_banner(index)
-	_title.text = tr("STORAGE_TITLE_BANNER" if banner else "STORAGE_TITLE_BOX")
-	_claim_box.visible = banner
-	visible = true
-	_refresh_claim()
-	_redraw()
 
 
 func close() -> void:
@@ -76,6 +104,7 @@ func close() -> void:
 		_bound_storage.changed.disconnect(_redraw)
 	_bound_storage = null
 	_index = -1
+	_container = -1
 	closed.emit()
 
 
@@ -85,7 +114,8 @@ func _process(delta: float) -> void:
 	_refresh_t -= delta
 	if _refresh_t <= 0.0:
 		_refresh_t = 1.0
-		if not _session.can_reach(_index):
+		var reach: bool = _session.can_reach_container(_container) if _container >= 0 else _session.can_reach(_index)
+		if not reach:
 			close()
 			return
 		_refresh_claim()
@@ -220,6 +250,16 @@ func _redraw() -> void:
 
 
 func _on_box_tapped(slot: int) -> void:
+	if _container >= 0:
+		var st: ItemStorage = _bound_storage
+		var id: String = st.slot_id(slot) if st != null else ""
+		if _session.container_take(_container, slot) > 0:
+			Settings.haptic(10)
+			if not _session.containers.is_valid(_container):
+				close()
+		elif st != null and not st.is_empty(slot):
+			Events.toast_requested.emit(tr("NOTICE_INVENTORY_FULL") % tr(_session.items.name_key(id)))
+		return
 	if _session.storage_take(_index, slot) > 0:
 		Settings.haptic(10)
 	elif not _session.deployables.storages[_index].is_empty(slot) and not _session.claims.is_banner(_index):
@@ -229,6 +269,10 @@ func _on_box_tapped(slot: int) -> void:
 
 func _on_inv_tapped(slot: int) -> void:
 	if _session.inventory.is_empty(slot):
+		return
+	if _container >= 0:
+		if _session.container_put(_container, slot) > 0:
+			Settings.haptic(10)
 		return
 	if _session.storage_put(_index, slot) > 0:
 		Settings.haptic(10)

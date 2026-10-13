@@ -2,7 +2,8 @@ class_name Hud
 extends CanvasLayer
 ## HUD: прицел, индикатор автобега, всплывающие сообщения, кнопка паузы и сенсорное управление.
 ## С этапа 1: показатели (здоровье, сытость, вода), часы, быстрая панель, цель под прицелом
-## и лента добычи. Данные приходят из game.gd методами set_*; сам HUD логики не содержит.
+## и лента добычи. С этапа 3: патроны активного оружия (над быстрой панелью) и красная вспышка
+## по краям экрана при ранении. Данные приходят из game.gd методами set_*; сам HUD логики не содержит.
 
 const TOAST_SECONDS: float = 3.0
 const FEED_LINES: int = 4
@@ -22,6 +23,9 @@ var _target: Label
 var _hotbar: Hotbar
 var _feed: Array[Label] = []
 var _feed_time: PackedFloat32Array = PackedFloat32Array()
+var _ammo: Label
+var _hurt: ColorRect
+var _hurt_t: float = 0.0
 
 
 func _ready() -> void:
@@ -87,6 +91,24 @@ func _ready() -> void:
 	_target.add_theme_color_override(&"font_shadow_color", Color(0.0, 0.0, 0.0, 0.7))
 	root.add_child(_target)
 
+	_ammo = Label.new()
+	_ammo.name = "Ammo"
+	_ammo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_ammo.custom_minimum_size = Vector2(300.0, 0.0)
+	_ammo.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	_ammo.add_theme_font_size_override(&"font_size", 24)
+	_ammo.add_theme_color_override(&"font_shadow_color", Color(0.0, 0.0, 0.0, 0.7))
+	_ammo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_ammo)
+
+	_hurt = ColorRect.new()
+	_hurt.name = "Hurt"
+	_hurt.color = Color(0.6, 0.05, 0.05, 0.0)
+	_hurt.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hurt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_hurt.visible = false
+	root.add_child(_hurt)
+
 	_feed_time.resize(FEED_LINES)
 	for i: int in FEED_LINES:
 		var l: Label = Label.new()
@@ -132,6 +154,7 @@ func _apply_settings() -> void:
 		_layout_hotbar(vp)
 		bar_bottom = _hotbar.position.y - 8.0
 	_autorun_label.position = Vector2(vp.x * 0.5 - 200.0, bar_bottom - 34.0)
+	_ammo.position = Vector2(vp.x * 0.5 - 150.0, bar_bottom - 68.0)
 
 
 ## Быстрая панель внизу по центру свободного промежутка между стиком и кнопками.
@@ -187,6 +210,19 @@ func set_clock(text: String) -> void:
 		_clock.text = text
 
 
+## Патроны активного оружия ("" — скрыть).
+func set_ammo(text: String) -> void:
+	if _ammo.text != text:
+		_ammo.text = text
+	_ammo.visible = not text.is_empty()
+
+
+## Вспышка ранения: сила 0..1 (от доли урона).
+func flash_hurt(strength: float) -> void:
+	_hurt_t = clampf(maxf(_hurt_t, 0.25 + strength), 0.0, 0.8)
+	_hurt.visible = true
+
+
 func set_target(text: String) -> void:
 	if _target.text != text:
 		_target.text = text
@@ -219,6 +255,10 @@ func show_toast(text: String) -> void:
 
 
 func _process(delta: float) -> void:
+	if _hurt_t > 0.0:
+		_hurt_t = maxf(_hurt_t - delta, 0.0)
+		_hurt.color.a = _hurt_t * 0.5
+		_hurt.visible = _hurt_t > 0.0
 	for i: int in FEED_LINES:
 		if _feed[i].visible:
 			_feed_time[i] -= delta
