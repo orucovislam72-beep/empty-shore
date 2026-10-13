@@ -145,6 +145,9 @@ func _build_demo_house(s: SurvivalSession) -> void:
 
 
 func _process(_delta: float) -> bool:
+	# Этап 3: ждём, пока мир под игроком подгрузится (персонаж включён), и только потом считаем кадры.
+	if current_scene != null and current_scene.has_method("is_world_ready") and not bool(current_scene.call("is_world_ready")):
+		return false
 	_setup_session()
 	_frames_left -= 1
 	if _frames_left == 10 and _opts.has("call") and current_scene != null:
