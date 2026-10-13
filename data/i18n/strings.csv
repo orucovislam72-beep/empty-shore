@@ -1,0 +1,61 @@
+keys,ru
+GAME_TITLE,Пустой Берег
+MENU_SUBTITLE,Этап 0 — каркас
+MENU_PLAY,Играть
+MENU_SETTINGS,Настройки
+MENU_QUIT,Выход
+MENU_VERSION,Версия %s
+PAUSE_TITLE,Пауза
+PAUSE_RESUME,Продолжить
+PAUSE_TO_MENU,В главное меню
+UI_BACK,Назад
+HUD_ATTACK,Удар
+HUD_AIM,Прицел
+HUD_JUMP,Прыжок
+HUD_CROUCH,Присесть
+HUD_RELOAD,Перезар.
+HUD_INTERACT,Взять
+HUD_INVENTORY,Вещи
+HUD_BUILD,Стройка
+HUD_PAUSE,Пауза
+HUD_AUTORUN_ON,Автобег
+TOAST_QUALITY_LOWERED,Частота кадров низкая: качество снижено до «%s». Можно изменить в настройках.
+TOAST_INVENTORY_LATER,Инвентарь появится на этапе 1.
+TOAST_BUILD_LATER,Строительство появится на этапе 2.
+SETTINGS_TITLE,Настройки
+SETTINGS_SECTION_GRAPHICS,Графика
+SETTINGS_SECTION_CONTROLS,Управление
+SETTINGS_SECTION_OTHER,Прочее
+SETTINGS_PRESET,Качество
+PRESET_LOW,Низкое
+PRESET_MEDIUM,Среднее
+PRESET_HIGH,Высокое
+PRESET_CUSTOM,Своё
+SETTINGS_RENDER_SCALE,Масштаб разрешения
+SETTINGS_FPS,Лимит кадров
+SETTINGS_FPS_30,30 к/с
+SETTINGS_FPS_60,60 к/с
+SETTINGS_DRAW_DISTANCE,Дальность прорисовки
+SETTINGS_SHADOWS,Тени
+SETTINGS_GRASS,Густота травы
+SETTINGS_BATTERY_SAVER,Экономия батареи
+SETTINGS_AUTO_QUALITY,Автоснижение качества
+SETTINGS_LOOK_SENS,Чувствительность обзора
+SETTINGS_AIM_SENS,Чувствительность прицела
+SETTINGS_INVERT_Y,Инверсия по вертикали
+SETTINGS_TOUCH,Сенсорное управление
+SETTINGS_TOUCH_AUTO,Авто
+SETTINGS_TOUCH_ON,Всегда
+SETTINGS_TOUCH_OFF,Скрыть
+SETTINGS_LEFT_HANDED,Режим для левшей
+SETTINGS_HUD_SCALE,Размер кнопок
+SETTINGS_HUD_OPACITY,Прозрачность кнопок
+SETTINGS_VIBRATION,Вибро-отклик
+SETTINGS_DEBUG,Отладочная панель
+UNIT_METERS,%d м
+DEBUG_FPS,FPS %.0f | кадр %.1f мс | худший %.1f мс
+DEBUG_CPU,логика %.1f мс | физика %.1f мс
+DEBUG_MEM,ОЗУ (движок) %.0f МБ | видео %.0f МБ
+DEBUG_OBJECTS,объекты %d | узлы %d | в кадре %d
+DEBUG_RENDER,draw calls %d | треугольники %d
+DEBUG_QUALITY,качество %s | масштаб %.2f | лимит %d

@@ -1,0 +1,38 @@
+{
+	"_comment": "Пресеты качества. Значения подбираются по замерам на устройствах (docs/PERFORMANCE.md).",
+	"order": ["low", "medium", "high"],
+	"presets": {
+		"low": {
+			"render_scale": 0.6,
+			"draw_distance": 120.0,
+			"shadows": false,
+			"grass_density": 0.25
+		},
+		"medium": {
+			"render_scale": 0.8,
+			"draw_distance": 200.0,
+			"shadows": true,
+			"grass_density": 0.5
+		},
+		"high": {
+			"render_scale": 1.0,
+			"draw_distance": 300.0,
+			"shadows": true,
+			"grass_density": 1.0
+		}
+	},
+	"battery_saver": {
+		"fps_limit": 30,
+		"max_render_scale": 0.7,
+		"shadows": false,
+		"max_grass_density": 0.25,
+		"max_draw_distance": 150.0
+	},
+	"auto_quality": {
+		"min_fps": 25.0,
+		"seconds_below": 10.0,
+		"warmup_seconds": 5.0,
+		"min_render_scale": 0.5,
+		"render_scale_step": 0.1
+	}
+}

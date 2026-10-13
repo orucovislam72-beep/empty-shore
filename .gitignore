@@ -1,0 +1,20 @@
+# Godot
+.godot/
+*.translation
+/android/
+export_credentials.cfg
+*.tmp
+
+# Сборки и ключи (никогда не коммитить)
+build/
+*.apk
+*.aab
+*.keystore
+*.jks
+*.idsig
+
+# ОС/редакторы
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

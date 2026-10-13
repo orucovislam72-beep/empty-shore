@@ -1,0 +1,15 @@
+{
+	"_comment": "Тестовый ландшафт этапа 0 (не финальный мир; чанки и биомы — этап 3).",
+	"seed": 1337,
+	"size_m": 256.0,
+	"resolution": 129,
+	"height_amplitude": 14.0,
+	"noise_frequency": 0.008,
+	"noise_octaves": 4,
+	"flat_spawn_radius_m": 12.0,
+	"grass_tufts_at_full_density": 6000,
+	"grass_cells_per_side": 4,
+	"grass_max_distance_m": 60.0,
+	"tree_count": 220,
+	"rock_count": 60
+}
