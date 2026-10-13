@@ -1,7 +1,8 @@
 class_name TestTerrain
 extends Node3D
-## Тестовый ландшафт этапа 0: рельеф из шума по seed, трава и деревья через MultiMesh.
-## Тяжёлые расчёты (высоты, нормали, расстановка) идут в WorkerThreadPool,
+## Тестовый ландшафт: рельеф из шума по seed, трава через MultiMesh, вода в низинах.
+## С этапа 1 здесь же (в том же рабочем потоке) расставляются ресурсные узлы — ResourceField;
+## рисует их ResourceView. Тяжёлые расчёты (высоты, нормали, расстановка) идут в WorkerThreadPool,
 ## в главном потоке только создание ресурсов из готовых массивов.
 ## Настоящие чанки и биомы — этап 3.
 
@@ -11,19 +12,26 @@ const CONFIG_PATH: String = "res://data/balance/test_terrain.json"
 
 var terrain_math: TerrainMath
 var is_built: bool = false
+## Ресурсные узлы (готовы после сигнала built).
+var resource_field: ResourceField
+var water_level: float = -4.0
+var half_size: float = 128.0
 
 var _cfg: Dictionary = {}
+var _res_cfg: Dictionary = {}
 var _task_id: int = -1
 var _result: Dictionary = {}
 var _grass_cells: Array[MultiMeshInstance3D] = []
-var _tree_nodes: Array[MultiMeshInstance3D] = []
 var _grass_density: float = 1.0
 var _draw_distance: float = 200.0
 
 
 func _ready() -> void:
 	_cfg = JsonData.load_dict(CONFIG_PATH)
+	_res_cfg = JsonData.load_dict(ResourceField.DEFAULT_PATH)
 	terrain_math = TerrainMath.from_config(_cfg)
+	water_level = JsonData.get_float(_cfg, "water_level", -4.0)
+	half_size = JsonData.get_float(_cfg, "size_m", 256.0) * 0.5
 	_task_id = WorkerThreadPool.add_task(_generate, false, "test_terrain_generate")
 
 
@@ -35,6 +43,7 @@ func _process(_delta: float) -> void:
 	WorkerThreadPool.wait_for_task_completion(_task_id)
 	_task_id = -1
 	_build_nodes()
+	resource_field = _result["field"]
 	_result.clear()
 	set_process(false)
 	is_built = true
@@ -64,8 +73,6 @@ func set_draw_distance(distance: float) -> void:
 	var grass_max: float = JsonData.get_float(_cfg, "grass_max_distance_m", 60.0)
 	for mmi: MultiMeshInstance3D in _grass_cells:
 		mmi.visibility_range_end = minf(grass_max, distance)
-	for mmi: MultiMeshInstance3D in _tree_nodes:
-		mmi.visibility_range_end = distance
 
 
 ## Выполняется в рабочем потоке. Только чистые вычисления, без доступа к дереву сцены.
@@ -85,6 +92,7 @@ func _generate() -> void:
 	var c_grass: Color = Color(0.36, 0.52, 0.27)
 	var c_dry: Color = Color(0.55, 0.56, 0.33)
 	var c_rock: Color = Color(0.47, 0.46, 0.44)
+	var c_sand: Color = Color(0.62, 0.58, 0.45)
 	for zi: int in res:
 		for xi: int in res:
 			var i: int = zi * res + xi
@@ -98,7 +106,9 @@ func _generate() -> void:
 			normals[i] = n
 			var slope: float = 1.0 - n.y
 			var col: Color = c_grass.lerp(c_dry, clampf(h / 14.0, 0.0, 1.0))
-			colors[i] = col.lerp(c_rock, clampf(slope * 6.0, 0.0, 1.0))
+			col = col.lerp(c_rock, clampf(slope * 6.0, 0.0, 1.0))
+			# Берег у воды — песок.
+			colors[i] = col.lerp(c_sand, clampf((water_level + 1.2 - h) / 1.0, 0.0, 1.0))
 
 	var indices: PackedInt32Array = PackedInt32Array()
 	indices.resize((res - 1) * (res - 1) * 6)
@@ -120,8 +130,6 @@ func _generate() -> void:
 
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = terrain_math.seed_value
-	var flat_r: float = terrain_math.flat_radius
-	var margin: float = 4.0
 
 	# Трава: transforms по ячейкам сетки, чтобы работал отсев по видимости.
 	var cells: int = JsonData.get_int(_cfg, "grass_cells_per_side", 4)
@@ -140,42 +148,13 @@ func _generate() -> void:
 				z = clampf(z, -half + 1.0, half - 1.0)
 				var y: float = terrain_math.height_at(x, z)
 				var basis: Basis = Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * rng.randf_range(0.7, 1.3))
+				if y < water_level + 0.1:
+					# Под водой травы нет: нулевой масштаб (число экземпляров в ячейке фиксировано).
+					basis = Basis.from_scale(Vector3.ZERO)
 				_write_transform(buf, t, basis, Vector3(x, y, z))
 			grass_buffers.append(buf)
 
-	var tree_count: int = JsonData.get_int(_cfg, "tree_count", 200)
-	var tree_buf: PackedFloat32Array = PackedFloat32Array()
-	tree_buf.resize(tree_count * 12)
-	var placed: int = 0
-	var attempts: int = 0
-	while placed < tree_count and attempts < tree_count * 10:
-		attempts += 1
-		var x: float = rng.randf_range(-half + margin, half - margin)
-		var z: float = rng.randf_range(-half + margin, half - margin)
-		if Vector2(x, z).length() < flat_r * 1.5:
-			continue
-		var y: float = terrain_math.height_at(x, z)
-		var slope_h: float = absf(terrain_math.height_at(x + 1.0, z) - y) + absf(terrain_math.height_at(x, z + 1.0) - y)
-		if slope_h > 0.9:
-			continue
-		var s: float = rng.randf_range(0.8, 1.4)
-		var basis: Basis = Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s * rng.randf_range(0.9, 1.2), s))
-		_write_transform(tree_buf, placed, basis, Vector3(x, y - 0.2, z))
-		placed += 1
-	tree_buf.resize(placed * 12)
-
-	var rock_count: int = JsonData.get_int(_cfg, "rock_count", 50)
-	var rock_buf: PackedFloat32Array = PackedFloat32Array()
-	rock_buf.resize(rock_count * 12)
-	for r: int in rock_count:
-		var x: float = rng.randf_range(-half + margin, half - margin)
-		var z: float = rng.randf_range(-half + margin, half - margin)
-		if Vector2(x, z).length() < flat_r:
-			x += flat_r * 2.0
-		var y: float = terrain_math.height_at(x, z)
-		var basis: Basis = Basis.from_euler(Vector3(rng.randf() * 0.5, rng.randf() * TAU, rng.randf() * 0.5))
-		basis = basis.scaled(Vector3(rng.randf_range(0.6, 1.8), rng.randf_range(0.4, 1.0), rng.randf_range(0.6, 1.8)))
-		_write_transform(rock_buf, r, basis, Vector3(x, y, z))
+	var field: ResourceField = ResourceField.generate(_res_cfg, terrain_math, half, water_level)
 
 	_result = {
 		"res": res,
@@ -186,8 +165,7 @@ func _generate() -> void:
 		"colors": colors,
 		"indices": indices,
 		"grass": grass_buffers,
-		"trees": tree_buf,
-		"rocks": rock_buf,
+		"field": field,
 	}
 
 
@@ -256,32 +234,10 @@ func _build_nodes() -> void:
 		add_child(mmi)
 		_grass_cells.append(mmi)
 
-	_tree_nodes.append(_make_multimesh("Trees", _make_tree_mesh(), _result["trees"]))
-	_tree_nodes.append(_make_multimesh("Rocks", _make_rock_mesh(), _result["rocks"]))
+	add_child(_make_water(half_size * 2.0, water_level))
 
 	set_grass_density(_grass_density)
 	set_draw_distance(_draw_distance)
-
-
-func _make_multimesh(node_name: String, mesh: Mesh, buf: PackedFloat32Array) -> MultiMeshInstance3D:
-	var mm: MultiMesh = MultiMesh.new()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.mesh = mesh
-	mm.instance_count = buf.size() / 12
-	if mm.instance_count > 0:
-		mm.buffer = buf
-	var mmi: MultiMeshInstance3D = MultiMeshInstance3D.new()
-	mmi.name = node_name
-	mmi.multimesh = mm
-	add_child(mmi)
-	return mmi
-
-
-static func _flat_material(color: Color) -> StandardMaterial3D:
-	var m: StandardMaterial3D = StandardMaterial3D.new()
-	m.albedo_color = color
-	m.roughness = 1.0
-	return m
 
 
 ## Пучок травы: три вертикальных треугольника под 60°, цвет от корня к кончику.
@@ -312,40 +268,18 @@ static func _make_grass_mesh() -> ArrayMesh:
 	return mesh
 
 
-## Дерево: ствол и крона-конус, основание в нуле. Одна сетка с двумя поверхностями = 2 draw call на все деревья.
-static func _make_tree_mesh() -> ArrayMesh:
-	var trunk: CylinderMesh = CylinderMesh.new()
-	trunk.top_radius = 0.12
-	trunk.bottom_radius = 0.22
-	trunk.height = 2.4
-	trunk.radial_segments = 6
-	trunk.rings = 0
-	trunk.cap_top = false
-	trunk.cap_bottom = false
-	var crown: CylinderMesh = CylinderMesh.new()
-	crown.top_radius = 0.0
-	crown.bottom_radius = 1.5
-	crown.height = 4.0
-	crown.radial_segments = 7
-	crown.rings = 0
-	crown.cap_top = false
-	var mesh: ArrayMesh = ArrayMesh.new()
-	var st: SurfaceTool = SurfaceTool.new()
-	st.append_from(trunk, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, 1.2, 0.0)))
-	st.commit(mesh)
-	st.clear()
-	st.append_from(crown, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, 3.6, 0.0)))
-	st.commit(mesh)
-	mesh.surface_set_material(0, _flat_material(Color(0.36, 0.26, 0.18)))
-	mesh.surface_set_material(1, _flat_material(Color(0.2, 0.38, 0.24)))
-	return mesh
-
-
-static func _make_rock_mesh() -> SphereMesh:
-	var m: SphereMesh = SphereMesh.new()
-	m.radius = 0.8
-	m.height = 1.2
-	m.radial_segments = 6
-	m.rings = 3
-	m.material = _flat_material(Color(0.5, 0.5, 0.52))
-	return m
+## Вода: одна плоскость на уровне water_level (2 треугольника), непрозрачная — дешевле для мобильного GPU.
+static func _make_water(side: float, level: float) -> MeshInstance3D:
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(side, side)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.17, 0.33, 0.42)
+	mat.roughness = 0.25
+	mat.metallic_specular = 0.6
+	plane.material = mat
+	var mi: MeshInstance3D = MeshInstance3D.new()
+	mi.name = "Water"
+	mi.mesh = plane
+	mi.position = Vector3(0.0, level, 0.0)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mi
