@@ -1,0 +1,10 @@
+{
+	"_comment": "Размещаемые объекты этапа 1. station_radius — на каком расстоянии работает как станция крафта. Костёр — станция только пока горит.",
+	"place_distance_m": 2.0,
+	"min_spacing_m": 1.6,
+	"interact_radius_m": 2.6,
+	"types": {
+		"campfire": {"item": "campfire", "name": "DEPLOY_CAMPFIRE", "station": "campfire", "station_radius": 3.0, "initial_fuel_s": 180.0, "fuel_per_wood_s": 30.0, "max_fuel_s": 900.0, "refuel_wood": 5, "light_range": 9.0},
+		"workbench_1": {"item": "workbench_1", "name": "DEPLOY_WORKBENCH_1", "station": "workbench_1", "station_radius": 3.0}
+	}
+}

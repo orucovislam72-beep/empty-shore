@@ -1,0 +1,14 @@
+{
+	"_comment": "Ресурсные узлы мира этапа 1. Расстановка детерминирована по seed ландшафта. stock — запас узла, yield — отдача за удар до множителя инструмента, respawn_s — время восстановления после истощения. radius/hit_height — зона попадания (с запасом, чтобы не требовать точного прицеливания).",
+	"seed_offset": 7,
+	"reach_m": 3.0,
+	"spawn_clear_radius_m": 6.0,
+	"min_slope_free": 0.9,
+	"water_margin_m": 0.4,
+	"types": [
+		{"id": "tree", "item": "wood", "name": "NODE_TREE", "count": 220, "stock": 150, "yield": 5, "respawn_s": 900.0, "radius": 0.9, "hit_height": 1.3},
+		{"id": "rock", "item": "stone", "name": "NODE_ROCK", "count": 70, "stock": 120, "yield": 5, "respawn_s": 900.0, "radius": 1.1, "hit_height": 0.4},
+		{"id": "ore", "item": "metal_ore", "name": "NODE_ORE", "count": 30, "stock": 60, "yield": 3, "respawn_s": 1200.0, "radius": 1.1, "hit_height": 0.4},
+		{"id": "bush", "item": "berries", "name": "NODE_BUSH", "count": 70, "stock": 5, "yield": 1, "respawn_s": 420.0, "radius": 0.8, "hit_height": 0.5}
+	]
+}
