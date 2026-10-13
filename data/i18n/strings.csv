@@ -1,7 +1,6 @@
 keys,ru
 GAME_TITLE,Пустой Берег
-MENU_SUBTITLE,Этап 0 — каркас
-MENU_PLAY,Играть
+MENU_SUBTITLE,Этап 1 — выживание
 MENU_SETTINGS,Настройки
 MENU_QUIT,Выход
 MENU_VERSION,Версия %s
@@ -20,7 +19,6 @@ HUD_BUILD,Стройка
 HUD_PAUSE,Пауза
 HUD_AUTORUN_ON,Автобег
 TOAST_QUALITY_LOWERED,Частота кадров низкая: качество снижено до «%s». Можно изменить в настройках.
-TOAST_INVENTORY_LATER,Инвентарь появится на этапе 1.
 TOAST_BUILD_LATER,Строительство появится на этапе 2.
 SETTINGS_TITLE,Настройки
 SETTINGS_SECTION_GRAPHICS,Графика
@@ -59,3 +57,92 @@ DEBUG_MEM,ОЗУ (движок) %.0f МБ | видео %.0f МБ
 DEBUG_OBJECTS,объекты %d | узлы %d | в кадре %d
 DEBUG_RENDER,draw calls %d | треугольники %d
 DEBUG_QUALITY,качество %s | масштаб %.2f | лимит %d
+MENU_CONTINUE,Продолжить
+MENU_NEW_GAME,Новая игра
+MENU_NEW_GAME_CONFIRM,Начать новую игру? Текущее сохранение будет удалено.
+MENU_NEW_GAME_YES,"Да, начать заново"
+PAUSE_SAVE,Сохранить
+UI_CLOSE,Закрыть
+HUD_EAT,Съесть
+HUD_PLACE,Поставить
+HUD_DRINK,Пить
+HUD_REFUEL,Дрова
+HUD_CLOCK,День %d · %02d:%02d
+HUD_TARGET,%s · %d/%d
+FEED_DRANK,Вы попили воды
+FEED_REFUELED,Подбросили дрова в костёр
+TOAST_GAME_LOADED,Игра загружена.
+TOAST_LOAD_FAILED,Не удалось загрузить сохранение — начата новая игра.
+TOAST_NEW_GAME_HINT,"Добудьте дерево и камень (кнопка «Удар»), откройте «Вещи» и сделайте топор и костёр."
+TOAST_SAVED,Игра сохранена.
+TOAST_SAVE_FAILED,Не удалось сохранить игру. Проверьте свободное место.
+NOTICE_ATE,Вы съели: %s
+NOTICE_CANT_PLACE,Здесь не поставить: %s
+NOTICE_CANT_PLACE_WATER,Нельзя поставить в воду: %s
+NOTICE_CRAFTED,Готово: %s
+NOTICE_CRAFT_BLOCKED,Нет места в инвентаре для «%s» — освободите ячейку.
+NOTICE_FIRE_FULL,Костёр полон дров.
+NOTICE_INVENTORY_FULL,Инвентарь полон: %s не поместилось.
+NOTICE_NEED_ITEM,Нужно: %s
+NOTICE_NEED_PICKAXE,Руду добывают киркой.
+NOTICE_TOOL_BROKE,Сломалось: %s
+NOTICE_WRONG_TOOL,Этим не добыть: %s
+INV_EQUIPMENT,Одежда
+INV_BACKPACK,Рюкзак
+INV_HOTBAR,Быстрая панель
+INV_EQUIP_HEAD,Голова
+INV_EQUIP_BODY,Тело
+INV_EQUIP_LEGS,Ноги
+INV_EQUIP_FEET,Обувь
+INV_EAT,Съесть
+INV_SPLIT,Разделить
+INV_HINT_TITLE,Вещи
+INV_HINT,"Перетащите предмет пальцем или нажмите на него, а затем на нужную ячейку."
+CRAFT_TITLE,Изготовление
+CRAFT_MAKE,Сделать
+CRAFT_CANCEL,Отменить
+CRAFT_NEEDS_STATION,Нужно рядом: %s
+CRAFT_QUEUE_EMPTY,Очередь изготовления пуста.
+CRAFT_QUEUE,Делается: %s — %d с (ещё в очереди: %d)
+CRAFT_REFUND_LOST,Не поместилось и потеряно: %d шт.
+CRAFT_FAIL_1,Неизвестный рецепт.
+CRAFT_FAIL_2,Не хватает материалов.
+CRAFT_FAIL_3,Нужна станция рядом (костёр или верстак).
+CRAFT_FAIL_4,Очередь изготовления заполнена.
+STATION_CAMPFIRE,горящий костёр
+STATION_WORKBENCH_1,верстак
+DEATH_TITLE,Вы погибли
+DEATH_CAUSE_HUNGER,Причина: голод
+DEATH_CAUSE_THIRST,Причина: жажда
+DEATH_CAUSE_FALL,Причина: падение
+DEATH_CAUSE_OTHER,Здоровье на нуле
+DEATH_ITEMS_LOST,Вещи потеряны. Вы появитесь у места высадки.
+DEATH_RESPAWN,Возродиться
+ITEM_WOOD,Дерево
+ITEM_WOOD_DESC,"Основной материал: инструменты, костёр, верстак. Топливо для костра."
+ITEM_STONE,Камень
+ITEM_STONE_DESC,Для каменных инструментов и очага.
+ITEM_METAL_ORE,Руда
+ITEM_METAL_ORE_DESC,Добывается киркой. Переплавляется в металл в горящем костре.
+ITEM_METAL,Металл
+ITEM_METAL_DESC,Для металлических инструментов на верстаке.
+ITEM_BERRIES,Ягоды
+ITEM_BERRIES_DESC,Немного утоляют голод и жажду.
+ITEM_STONE_AXE,Каменный топор
+ITEM_STONE_AXE_DESC,"Рубит деревья в 4 раза быстрее, чем руками."
+ITEM_STONE_PICKAXE,Каменная кирка
+ITEM_STONE_PICKAXE_DESC,Для камня и руды.
+ITEM_METAL_AXE,Металлический топор
+ITEM_METAL_AXE_DESC,Быстрый и прочный топор.
+ITEM_METAL_PICKAXE,Металлическая кирка
+ITEM_METAL_PICKAXE_DESC,Быстрая и прочная кирка.
+ITEM_CAMPFIRE,Костёр
+ITEM_CAMPFIRE_DESC,"Ставится на землю. Светит ночью, переплавляет руду. Горит, пока есть дрова."
+ITEM_WORKBENCH_1,Верстак
+ITEM_WORKBENCH_1_DESC,Ставится на землю. Нужен для металлических инструментов.
+DEPLOY_CAMPFIRE,Костёр
+DEPLOY_WORKBENCH_1,Верстак
+NODE_TREE,Дерево
+NODE_ROCK,Камень
+NODE_ORE,Рудный камень
+NODE_BUSH,Ягодный куст

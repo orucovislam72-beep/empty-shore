@@ -17,5 +17,8 @@ signal autorun_toggle_requested
 signal pause_requested
 ## Переключить отладочную панель.
 signal debug_overlay_toggled
-## Персонаж смотрит на объект, который можно взять (пустая строка — ничего).
+## Доступно контекстное действие (кнопка «Взять»): label — ключ перевода подписи кнопки
+## («Пить», «Подбросить дрова»); пустая строка — действия нет, кнопка скрыта.
 signal interact_target_changed(label: String)
+## Подпись основной кнопки по активному предмету («Удар», «Съесть», «Поставить») — ключ перевода.
+signal primary_action_changed(label: String)

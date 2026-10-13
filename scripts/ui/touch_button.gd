@@ -23,6 +23,12 @@ func setup(p_action: StringName, p_label_key: String, p_toggle: bool = false) ->
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+func set_label(key: String) -> void:
+	if label_key != key:
+		label_key = key
+		queue_redraw()
+
+
 func set_radius(r: float) -> void:
 	radius = r
 	size = Vector2(r * 2.0, r * 2.0)

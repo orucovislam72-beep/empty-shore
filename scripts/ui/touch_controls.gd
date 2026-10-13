@@ -21,6 +21,10 @@ var _look_finger: int = -1
 var _owner_by_finger: Dictionary = {}
 var _safe_margin: Vector2 = Vector2(24.0, 24.0)
 var _stick_zone: Rect2 = Rect2()
+## Элементы интерфейса поверх зоны стика/обзора (быстрая панель): касания по ним отдаются GUI.
+var _passthrough: Array[Control] = []
+## Свободный промежуток по X внизу экрана между стиком и кнопками (для быстрой панели).
+var bottom_free: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
@@ -40,13 +44,27 @@ func _ready() -> void:
 	resized.connect(_layout)
 	Events.settings_changed.connect(_layout)
 	Events.interact_target_changed.connect(_on_interact_target)
+	Events.primary_action_changed.connect(_on_primary_action)
 	_layout()
+
+
+## Касания внутри control не перехватываются стиком и обзором (их получает GUI).
+func add_passthrough(control: Control) -> void:
+	_passthrough.append(control)
 
 
 func _on_interact_target(label: String) -> void:
 	for b: TouchButton in _buttons:
 		if b.action == &"interact":
 			b.visible = not label.is_empty()
+			if not label.is_empty():
+				b.set_label(label)
+
+
+func _on_primary_action(label: String) -> void:
+	for b: TouchButton in _buttons:
+		if b.action == &"attack":
+			b.set_label(label)
 
 
 func _canvas_scale() -> float:
@@ -114,6 +132,15 @@ func _layout() -> void:
 		if mirror:
 			c.x = w - c.x
 		b.position = c - Vector2(r, r)
+	# Свободный промежуток внизу: от края стика до ближайшей нижней кнопки.
+	var stick_edge: float = stick_c.x + _stick.radius if not mirror else w - (stick_c.x - _stick.radius)
+	var btn_edge: float = w
+	for i: int in _buttons.size():
+		if BUTTONS[i].has("pos"):
+			var b: TouchButton = _buttons[i]
+			var left: float = b.position.x if not mirror else w - (b.position.x + b.size.x)
+			btn_edge = minf(btn_edge, left)
+	bottom_free = Vector2(stick_edge, btn_edge) if not mirror else Vector2(w - btn_edge, w - stick_edge)
 	queue_redraw()
 
 
@@ -138,6 +165,9 @@ func _to_canvas(p: Vector2) -> Vector2:
 
 func _on_touch_down(index: int, window_pos: Vector2) -> void:
 	var p: Vector2 = _to_canvas(window_pos)
+	for c: Control in _passthrough:
+		if c.is_visible_in_tree() and c.get_global_rect().has_point(p):
+			return
 	for i: int in range(_buttons.size() - 1, -1, -1):
 		var b: TouchButton = _buttons[i]
 		if b.hit(p):
