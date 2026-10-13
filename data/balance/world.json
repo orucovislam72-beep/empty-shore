@@ -1,0 +1,27 @@
+{
+	"_comment": "Мир этапа 3. Остров size_m × size_m (центр в 0,0) в океане, разбит на чанки chunk_m × chunk_m; сетка высот чанка — chunk_res × chunk_res вершин. Высоты: island (форма острова: доля радиуса inner..outer — переход суша → море, coast_warp — изрезанность берега), hills (холмы), mountains (хребты по маске mask_from..mask_to). Биомы: побережье — ниже water_level + coast_max_h; горы — доля гор ≥ mountain_mask или высота ≥ mountain_h; лес/равнина — по шуму влажности. landing — место высадки новой игры (на берегу под углом angle_deg от центра, площадка flat_radius_m выровнена на height_m над водой). coast_points — сколько точек возрождения на побережье искать. stream — подгрузка чанков: радиус столкновений (в чанках), запас до выгрузки, бюджет главного потока на кадр (мс) в игре и при загрузке, сколько чанков генерировать в потоках одновременно. render_nodes_as: multimesh (по чанкам) | instances (узел на объект — только для замеров).",
+	"seed": 1337,
+	"size_m": 1280.0,
+	"chunk_m": 64.0,
+	"chunk_res": 33,
+	"water_level": 0.0,
+	"island": {"inner": 0.75, "outer": 1.05, "coast_warp": 0.18, "coast_freq": 0.004, "ocean_floor": -16.0, "land_base": 5.0},
+	"hills": {"amp": 9.0, "freq": 0.006, "octaves": 4},
+	"mountains": {"amp": 48.0, "freq": 0.0045, "mask_freq": 0.0022, "mask_from": 0.62, "mask_to": 0.78},
+	"biomes": {"coast_max_h": 2.6, "mountain_mask": 0.35, "mountain_h": 24.0, "moisture_freq": 0.003, "forest_moisture_above": 0.0},
+	"colors": {
+		"coast": [0.66, 0.61, 0.46],
+		"plain": [0.50, 0.58, 0.30],
+		"forest": [0.27, 0.42, 0.22],
+		"mountain": [0.47, 0.46, 0.44],
+		"rock": [0.42, 0.41, 0.40],
+		"snow": [0.86, 0.88, 0.90],
+		"seabed": [0.40, 0.42, 0.36]
+	},
+	"snow_above_m": 38.0,
+	"landing": {"angle_deg": 90.0, "height_m": 1.6, "inland_m": 8.0, "flat_radius_m": 12.0, "clear_radius_m": 16.0},
+	"coast_points": 24,
+	"grass": {"tufts_per_chunk": 260, "max_distance_m": 60.0, "biome_density": {"coast": 0.1, "plain": 1.0, "forest": 0.55, "mountain": 0.25}},
+	"stream": {"collision_radius_chunks": 1, "keep_margin_m": 48.0, "budget_ms": 2.0, "loading_budget_ms": 8.0, "max_tasks": 2, "collider_batch": 16},
+	"render_nodes_as": "multimesh"
+}
