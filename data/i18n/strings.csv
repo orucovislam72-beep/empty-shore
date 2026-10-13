@@ -1,6 +1,6 @@
 keys,ru
 GAME_TITLE,Пустой Берег
-MENU_SUBTITLE,Этап 1 — выживание
+MENU_SUBTITLE,Этап 2 — строительство
 MENU_SETTINGS,Настройки
 MENU_QUIT,Выход
 MENU_VERSION,Версия %s
@@ -19,7 +19,6 @@ HUD_BUILD,Стройка
 HUD_PAUSE,Пауза
 HUD_AUTORUN_ON,Автобег
 TOAST_QUALITY_LOWERED,Частота кадров низкая: качество снижено до «%s». Можно изменить в настройках.
-TOAST_BUILD_LATER,Строительство появится на этапе 2.
 SETTINGS_TITLE,Настройки
 SETTINGS_SECTION_GRAPHICS,Графика
 SETTINGS_SECTION_CONTROLS,Управление
@@ -146,3 +145,88 @@ NODE_TREE,Дерево
 NODE_ROCK,Камень
 NODE_ORE,Рудный камень
 NODE_BUSH,Ягодный куст
+ITEM_STORAGE_BOX,Ящик
+ITEM_STORAGE_BOX_DESC,"Деревянный ящик на 18 ячеек. Поставьте в доме и храните вещи."
+ITEM_BASE_BANNER,Знамя базы
+ITEM_BASE_BANNER_DESC,"Закрепляет за вами землю в радиусе 18 м: строить там могут только свои. Положите в знамя ресурсы — оно платит за обслуживание, и постройки не ветшают."
+ITEM_CODE_LOCK,Кодовый замок
+ITEM_CODE_LOCK_DESC,"Ставится на дверь в режиме стройки. Открыть дверь сможет только тот, кто знает код из 4 цифр."
+DEPLOY_STORAGE_BOX,Ящик
+DEPLOY_BASE_BANNER,Знамя базы
+PIECE_FOUNDATION,Фундамент
+PIECE_WALL,Стена
+PIECE_DOORWAY,Проём
+PIECE_DOOR,Дверь
+PIECE_FLOOR,Перекрытие
+PIECE_ROOF,Крыша
+PIECE_STAIRS,Лестница
+MAT_WOOD,Дерево
+MAT_STONE,Камень
+MAT_METAL,Металл
+NOTICE_NO_PRIVILEGE,"Здесь чужая база: нужно право у её знамени."
+NOTICE_BANNER_OVERLAP,Слишком близко к другому знамени базы.
+NOTICE_DOOR_BLOCKED,"Не закрыть: в проёме кто-то стоит."
+BUILD_REASON_1,Место занято.
+BUILD_REASON_2,Нет опоры.
+BUILD_REASON_3,Слишком неровно для фундамента.
+BUILD_REASON_4,В воде строить нельзя.
+BUILD_REASON_5,Мешает дерево или предмет.
+BUILD_REASON_6,Вы стоите на этом месте.
+BUILD_REASON_7,Слишком далеко.
+BUILD_REASON_8,Из этого материала деталь не делается.
+BUILD_REASON_9,Дверь ставится в проём.
+BUILD_REASON_10,Сюда нельзя.
+BUILD_RESULT_2,"Здесь чужая база: нужно право у её знамени."
+BUILD_RESULT_3,Не хватает ресурсов.
+BUILD_RESULT_4,Наведите прицел на деталь постройки.
+BUILD_RESULT_5,Лучше материала нет.
+BUILD_RESULT_6,Деталь цела.
+BUILD_RESULT_7,Нужен кодовый замок (делается на верстаке).
+BUILD_RESULT_8,Неверный код.
+BUILD_RESULT_9,Дверь заперта.
+HUD_ROTATE,Повернуть
+HUD_OPEN,Открыть
+HUD_CLOSE_DOOR,Закрыть
+HUD_UNLOCK,Код
+HUD_BOX,Ящик
+HUD_BANNER,Знамя
+HUD_TARGET_PIECE,%s · %s · %d/%d
+HUD_TARGET_LOCKED,%s · %s · %d/%d · замок
+BUILD_DONE,Готово
+BUILD_UPGRADE,Улучшить
+BUILD_REPAIR,Починить
+BUILD_DEMOLISH,Разобрать
+BUILD_LOCK,Замок
+BUILD_CHANGE_CODE,Сменить код
+BUILD_COST,Нужно: %s
+BUILD_NO_TARGET,Наведите прицел на деталь — улучшить или починить.
+BUILD_TARGET_INFO,"%s (%s): улучшить — %s, починить — %s"
+BUILD_COST_NONE,—
+FEED_PLACED,Поставлено: %s
+FEED_UPGRADED,Улучшено: %s
+FEED_REPAIRED,Починено: %s
+FEED_DEMOLISHED,Разобрано: %s
+FEED_LOCK_SET,Замок поставлен
+FEED_CODE_OK,Код верный
+FEED_CODE_CHANGED,Код изменён
+FEED_DOOR_OPEN,Дверь открыта
+FEED_DOOR_CLOSED,Дверь закрыта
+STORAGE_TITLE_BOX,Ящик
+STORAGE_TITLE_BANNER,Знамя базы
+STORAGE_YOURS,Ваши вещи
+STORAGE_HINT,Нажмите на предмет — он переложится на другую сторону.
+CLAIM_AUTHORIZED,Вы свой на этой базе: можно строить и ставить замки.
+CLAIM_NOT_AUTHORIZED,Вы не свой на этой базе.
+CLAIM_JOIN,Стать своим
+CLAIM_LEAVE,Выйти из своих
+CLAIM_RESET,Сбросить список
+CLAIM_MEMBERS,Своих: %d
+CLAIM_UPKEEP,Обслуживание в час: %s
+CLAIM_UPKEEP_NONE,В зоне знамени нет построек.
+CLAIM_HOURS,Запаса хватит на %s ч игры.
+CLAIM_UNPAID,"Запаса не хватает: постройки ветшают."
+KEYPAD_SET,Задайте код из 4 цифр
+KEYPAD_ENTER,Введите код замка
+KEYPAD_CHANGE,Новый код из 4 цифр
+KEYPAD_CLEAR,Стереть
+KEYPAD_OK,Готово

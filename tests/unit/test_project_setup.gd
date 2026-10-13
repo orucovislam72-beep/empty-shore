@@ -49,7 +49,7 @@ func test_data_files_parse() -> void:
 	for p: String in [
 		"res://data/balance/quality_presets.json", "res://data/balance/player.json", "res://data/balance/test_terrain.json",
 		"res://data/balance/survival.json", "res://data/balance/day_night.json", "res://data/balance/resources.json",
-		"res://data/balance/deployables.json", "res://data/balance/game.json",
+		"res://data/balance/deployables.json", "res://data/balance/game.json", "res://data/balance/building.json",
 		"res://data/items/items.json", "res://data/recipes/recipes.json",
 	]:
 		assert_false(JsonData.load_dict(p).is_empty(), p)
@@ -74,6 +74,15 @@ func test_data_text_keys_have_russian_text() -> void:
 		keys.append("INV_EQUIP_%s" % slot.to_upper())
 	for c: int in [1, 2, 3, 4]:
 		keys.append("CRAFT_FAIL_%d" % c)
+	var bdefs: BuildingDefs = BuildingDefs.load_default()
+	for type: String in bdefs.piece_order:
+		keys.append(bdefs.name_key(type))
+	for m: int in bdefs.material_order.size():
+		keys.append(bdefs.material_name(m))
+	for r: int in range(1, BuildingGrid.Reason.size()):
+		keys.append("BUILD_REASON_%d" % r)
+	for r: int in range(2, SurvivalSession.Build.size()):
+		keys.append("BUILD_RESULT_%d" % r)
 	for k: String in keys:
 		assert_ne(TranslationServer.translate(k), StringName(k), "нет перевода для %s" % k)
 
@@ -138,7 +147,7 @@ func test_android_export_presets() -> void:
 ## Ищет строковые литералы вида "UPPER_CASE_KEY" с известными префиксами.
 func _collect_keys(dir_path: String) -> PackedStringArray:
 	var out: PackedStringArray = PackedStringArray()
-	var re: RegEx = RegEx.create_from_string("\"((?:MENU|HUD|SETTINGS|PAUSE|TOAST|DEBUG|UI|UNIT|GAME|PRESET|INV|CRAFT|NOTICE|DEATH|FEED|ITEM|NODE|STATION)_[A-Z0-9_]+)\"")
+	var re: RegEx = RegEx.create_from_string("\"((?:MENU|HUD|SETTINGS|PAUSE|TOAST|DEBUG|UI|UNIT|GAME|PRESET|INV|CRAFT|NOTICE|DEATH|FEED|ITEM|NODE|STATION|BUILD|PIECE|MAT|STORAGE|CLAIM|KEYPAD|DEPLOY)_[A-Z0-9_]+)\"")
 	var dir: DirAccess = DirAccess.open(dir_path)
 	for f: String in dir.get_files():
 		if not f.ends_with(".gd"):

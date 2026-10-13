@@ -13,7 +13,9 @@ const SAVE_DIR: String = "user://saves"
 const MAIN_SLOT: String = "main"
 ## Текущая версия формата игровых сохранений. При изменении — добавить миграцию в _make_migrator().
 ## v1 — этап 1: world, player, inventory, crafting, resources, deployables.
-const FORMAT_VERSION: int = 1
+## v2 — этап 2: + building (детали построек), claims (обслуживание знамён); у объектов deployables
+##      добавлены владелец, список права и хранилище (старые 6-полевые записи читаются как есть).
+const FORMAT_VERSION: int = 2
 
 ## Папка слотов. Тесты подменяют её, чтобы не трогать сохранения игрока.
 var save_dir: String = SAVE_DIR
@@ -30,8 +32,17 @@ var _pending_slot: String = ""
 
 static func _make_migrator() -> SaveMigrator:
 	var m: SaveMigrator = SaveMigrator.new(FORMAT_VERSION)
-	# Пример на будущее: m.register(1, func(d: Dictionary) -> Dictionary: d["new_field"] = 0; return d)
+	m.register(1, migrate_1_to_2)
 	return m
+
+
+## 1 → 2: построек и знамён ещё не было — добавляем пустые разделы.
+static func migrate_1_to_2(d: Dictionary) -> Dictionary:
+	if not d.has("building"):
+		d["building"] = {"pieces": []}
+	if not d.has("claims"):
+		d["claims"] = {"acc": 0.0, "debt": {}}
+	return d
 
 
 func slot_path(slot: String) -> String:

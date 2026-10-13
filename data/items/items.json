@@ -1,5 +1,5 @@
 {
-	"_comment": "Предметы этапа 1. name/desc — ключи перевода (data/i18n/strings.csv). kind: resource | tool | food | deployable. stack — размер стопки. tool.gather — множитель отдачи по типу добываемого предмета (0 = этим не добыть). tool.durability — число ударов до поломки.",
+	"_comment": "Предметы (этапы 1–2). name/desc — ключи перевода (data/i18n/strings.csv). kind: resource | tool | food | deployable. stack — размер стопки. tool.gather — множитель отдачи по типу добываемого предмета (0 = этим не добыть). tool.durability — число ударов до поломки.",
 	"hand": {
 		"_comment": "Голые руки: используются, если активный слот пуст или в нём не инструмент.",
 		"swing_time": 0.8,
@@ -21,6 +21,9 @@
 		"metal_pickaxe": {"name": "ITEM_METAL_PICKAXE", "desc": "ITEM_METAL_PICKAXE_DESC", "kind": "tool", "stack": 1, "icon": "res://assets/icons/items/metal_pickaxe.svg",
 			"tool": {"swing_time": 0.65, "durability": 400, "gather": {"wood": 0.6, "stone": 2.6, "metal_ore": 1.8, "berries": 1.0}}},
 		"campfire": {"name": "ITEM_CAMPFIRE", "desc": "ITEM_CAMPFIRE_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/campfire.svg", "deploy": "campfire"},
-		"workbench_1": {"name": "ITEM_WORKBENCH_1", "desc": "ITEM_WORKBENCH_1_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/workbench_1.svg", "deploy": "workbench_1"}
+		"workbench_1": {"name": "ITEM_WORKBENCH_1", "desc": "ITEM_WORKBENCH_1_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/workbench_1.svg", "deploy": "workbench_1"},
+		"storage_box": {"name": "ITEM_STORAGE_BOX", "desc": "ITEM_STORAGE_BOX_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/storage_box.svg", "deploy": "storage_box"},
+		"base_banner": {"name": "ITEM_BASE_BANNER", "desc": "ITEM_BASE_BANNER_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/base_banner.svg", "deploy": "base_banner"},
+		"code_lock": {"name": "ITEM_CODE_LOCK", "desc": "ITEM_CODE_LOCK_DESC", "kind": "resource", "stack": 5, "icon": "res://assets/icons/items/code_lock.svg"}
 	}
 }
