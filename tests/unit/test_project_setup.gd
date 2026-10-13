@@ -6,6 +6,7 @@ const REQUIRED_ACTIONS: Array[StringName] = [
 	&"look_left", &"look_right", &"look_up", &"look_down",
 	&"jump", &"crouch", &"attack", &"aim", &"reload", &"interact",
 	&"inventory", &"build", &"toggle_autorun", &"pause", &"toggle_debug",
+	&"hotbar_next", &"hotbar_prev",
 ]
 
 
@@ -33,7 +34,7 @@ func test_compatibility_renderer_default() -> void:
 func test_all_used_translation_keys_have_russian_text() -> void:
 	TranslationServer.set_locale("ru")
 	var keys: PackedStringArray = _collect_keys("res://scripts")
-	assert_gt(keys.size(), 30)
+	assert_gt(keys.size(), 80)
 	for k: String in keys:
 		assert_ne(TranslationServer.translate(k), StringName(k), "нет перевода для %s" % k)
 
@@ -45,8 +46,58 @@ func test_preset_names_have_translations() -> void:
 
 
 func test_data_files_parse() -> void:
-	for p: String in ["res://data/balance/quality_presets.json", "res://data/balance/player.json", "res://data/balance/test_terrain.json"]:
+	for p: String in [
+		"res://data/balance/quality_presets.json", "res://data/balance/player.json", "res://data/balance/test_terrain.json",
+		"res://data/balance/survival.json", "res://data/balance/day_night.json", "res://data/balance/resources.json",
+		"res://data/balance/deployables.json", "res://data/balance/game.json",
+		"res://data/items/items.json", "res://data/recipes/recipes.json",
+	]:
 		assert_false(JsonData.load_dict(p).is_empty(), p)
+
+
+func test_data_text_keys_have_russian_text() -> void:
+	TranslationServer.set_locale("ru")
+	var keys: PackedStringArray = PackedStringArray()
+	var db: ItemDB = ItemDB.load_default()
+	for id: String in db.ids():
+		keys.append(db.name_key(id))
+		keys.append(db.desc_key(id))
+	for t: Variant in JsonData.load_dict("res://data/balance/resources.json")["types"]:
+		keys.append(String((t as Dictionary)["name"]))
+	var dep: Dictionary = JsonData.load_dict("res://data/balance/deployables.json")["types"]
+	for k: String in dep:
+		keys.append(String((dep[k] as Dictionary)["name"]))
+		var st: String = String((dep[k] as Dictionary).get("station", ""))
+		if not st.is_empty():
+			keys.append("STATION_%s" % st.to_upper())
+	for slot: String in Inventory.EQUIP_SLOTS:
+		keys.append("INV_EQUIP_%s" % slot.to_upper())
+	for c: int in [1, 2, 3, 4]:
+		keys.append("CRAFT_FAIL_%d" % c)
+	for k: String in keys:
+		assert_ne(TranslationServer.translate(k), StringName(k), "нет перевода для %s" % k)
+
+
+func test_item_icons_exist() -> void:
+	var db: ItemDB = ItemDB.load_default()
+	for id: String in db.ids():
+		assert_true(ResourceLoader.exists(db.icon_path(id)), "иконка %s" % id)
+
+
+func test_app_icons_are_png_and_exist() -> void:
+	var icon: String = ProjectSettings.get_setting("application/config/icon")
+	assert_true(icon.ends_with(".png") and ResourceLoader.exists(icon), "иконка проекта")
+	var cfg: ConfigFile = ConfigFile.new()
+	cfg.load("res://export_presets.cfg")
+	for section: String in cfg.get_sections():
+		if not section.ends_with(".options"):
+			continue
+		for key: String in ["launcher_icons/main_192x192", "launcher_icons/adaptive_foreground_432x432", "launcher_icons/adaptive_background_432x432"]:
+			var path: String = String(cfg.get_value(section, key, ""))
+			assert_true(path.ends_with(".png") and FileAccess.file_exists(path), "%s: %s" % [section, key])
+		var img: Image = Image.new()
+		img.load_png_from_buffer(FileAccess.get_file_as_bytes(String(cfg.get_value(section, "launcher_icons/adaptive_foreground_432x432"))))
+		assert_eq(img.get_size(), Vector2i(432, 432), "передний слой адаптивной иконки 432×432")
 
 
 func test_autoloads_present() -> void:
@@ -87,7 +138,7 @@ func test_android_export_presets() -> void:
 ## Ищет строковые литералы вида "UPPER_CASE_KEY" с известными префиксами.
 func _collect_keys(dir_path: String) -> PackedStringArray:
 	var out: PackedStringArray = PackedStringArray()
-	var re: RegEx = RegEx.create_from_string("\"((?:MENU|HUD|SETTINGS|PAUSE|TOAST|DEBUG|UI|UNIT|GAME|PRESET)_[A-Z0-9_]+)\"")
+	var re: RegEx = RegEx.create_from_string("\"((?:MENU|HUD|SETTINGS|PAUSE|TOAST|DEBUG|UI|UNIT|GAME|PRESET|INV|CRAFT|NOTICE|DEATH|FEED|ITEM|NODE|STATION)_[A-Z0-9_]+)\"")
 	var dir: DirAccess = DirAccess.open(dir_path)
 	for f: String in dir.get_files():
 		if not f.ends_with(".gd"):

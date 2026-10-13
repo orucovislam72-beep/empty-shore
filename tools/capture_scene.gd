@@ -3,6 +3,8 @@ extends SceneTree
 ## Запуск (нужен реальный рендер, не --headless):
 ##   godot --path . -s res://tools/capture_scene.gd -- --scene=res://scenes/main/game.tscn --out=user://shot.png --frames=240
 ## Опции: --call=<метод> (вызвать метод корня сцены за 10 кадров до снимка), --touch=on (показать сенсорное управление), --debug=on (отладочная панель), --preset=low|medium|high
+## Для игровой сцены (этап 1): --items=wood:60,stone_axe:1 (выдать предметы), --hour=21.5 (время суток),
+## --place=campfire (поставить костёр перед игроком), --slot=N (активная ячейка) — применяются, когда сессия готова.
 
 var _frames_left: int = 240
 var _out: String = "user://capture.png"
@@ -36,7 +38,32 @@ func _setup() -> void:
 	change_scene_to_file(_scene_path)
 
 
+var _session_setup_done: bool = false
+
+
+func _setup_session() -> void:
+	if _session_setup_done or current_scene == null:
+		return
+	var session: Variant = current_scene.get("session")
+	if session == null:
+		return
+	_session_setup_done = true
+	var s: SurvivalSession = session
+	if _opts.has("hour"):
+		s.clock.time_hours = float(_opts["hour"])
+	if _opts.has("items"):
+		for pair: String in String(_opts["items"]).split(","):
+			var kv: PackedStringArray = pair.split(":")
+			s.inventory.add(kv[0], int(kv[1]) if kv.size() > 1 else 1)
+	if _opts.has("place"):
+		var p: Vector3 = s.placement_point(s.player_position, s.player_yaw)
+		s.deployables.place(String(_opts["place"]), p, s.player_yaw)
+	if _opts.has("slot"):
+		s.select_slot(int(_opts["slot"]))
+
+
 func _process(_delta: float) -> bool:
+	_setup_session()
 	_frames_left -= 1
 	if _frames_left == 10 and _opts.has("call") and current_scene != null:
 		current_scene.call(_opts["call"])
