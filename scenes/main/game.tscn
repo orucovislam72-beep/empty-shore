@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/world/test_terrain.gd" id="2_terrain"]
@@ -11,6 +11,11 @@
 [ext_resource type="Script" path="res://scripts/ui/inventory_screen.gd" id="9_inventory"]
 [ext_resource type="Script" path="res://scripts/ui/death_screen.gd" id="10_death"]
 [ext_resource type="Script" path="res://scripts/player/held_item_view.gd" id="11_held"]
+[ext_resource type="Script" path="res://scripts/building/building_view.gd" id="12_building"]
+[ext_resource type="Script" path="res://scripts/building/build_ghost.gd" id="13_ghost"]
+[ext_resource type="Script" path="res://scripts/ui/build_panel.gd" id="14_build_panel"]
+[ext_resource type="Script" path="res://scripts/ui/storage_screen.gd" id="15_storage"]
+[ext_resource type="Script" path="res://scripts/ui/keypad_screen.gd" id="16_keypad"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.38, 0.52, 0.66, 1)
@@ -55,6 +60,12 @@ script = ExtResource("7_resources")
 [node name="Deployables" type="Node3D" parent="."]
 script = ExtResource("8_deploy")
 
+[node name="Building" type="Node3D" parent="."]
+script = ExtResource("12_building")
+
+[node name="BuildGhost" type="MeshInstance3D" parent="."]
+script = ExtResource("13_ghost")
+
 [node name="Player" parent="." instance=ExtResource("3_player")]
 
 [node name="HeldItem" type="Node3D" parent="Player/Head/Camera"]
@@ -74,3 +85,12 @@ script = ExtResource("9_inventory")
 
 [node name="DeathScreen" type="CanvasLayer" parent="."]
 script = ExtResource("10_death")
+
+[node name="BuildPanel" type="CanvasLayer" parent="."]
+script = ExtResource("14_build_panel")
+
+[node name="StorageScreen" type="CanvasLayer" parent="."]
+script = ExtResource("15_storage")
+
+[node name="KeypadScreen" type="CanvasLayer" parent="."]
+script = ExtResource("16_keypad")

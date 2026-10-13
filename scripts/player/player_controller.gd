@@ -48,6 +48,7 @@ func _ready() -> void:
 	_pad_deg_per_sec = JsonData.get_float(_cfg, "gamepad_look_deg_per_sec", _pad_deg_per_sec)
 	_mouse_deg_per_px = JsonData.get_float(_cfg, "mouse_look_deg_per_px", _mouse_deg_per_px)
 	_gravity = float(ProjectSettings.get_setting("physics/3d/default_gravity", 9.8))
+	floor_max_angle = deg_to_rad(JsonData.get_float(_cfg, "floor_max_angle_deg", 45.0))
 	_head.position.y = _eye_height
 	Events.look_input.connect(_on_look_input)
 	Events.autorun_toggle_requested.connect(_on_autorun_toggle)

@@ -1,5 +1,5 @@
 {
-	"_comment": "Параметры персонажа этапа 0. Скорости в м/с, углы в градусах.",
+	"_comment": "Параметры персонажа. Скорости в м/с, углы в градусах. floor_max_angle_deg — самый крутой подъём, по которому можно идти (лестница построек — 45°).",
 	"walk_speed": 4.0,
 	"run_speed": 6.5,
 	"crouch_speed": 2.0,
@@ -11,5 +11,6 @@
 	"pitch_limit_deg": 85.0,
 	"touch_look_deg_per_px": 0.15,
 	"gamepad_look_deg_per_sec": 160.0,
-	"mouse_look_deg_per_px": 0.12
+	"mouse_look_deg_per_px": 0.12,
+	"floor_max_angle_deg": 50.0
 }
