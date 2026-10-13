@@ -1,7 +1,10 @@
 class_name Deployables
 extends RefCounted
-## Размещённые игроком объекты этапа 1: костёр (станция, свет, топливо) и верстак 1 уровня.
+## Размещённые игроком объекты: костёр (станция, свет, топливо), верстак 1 уровня,
+## с этапа 2 — ящик (хранилище) и знамя базы (право владения, запас на обслуживание).
 ## Чистая логика без сцен (data/balance/deployables.json); сцена слушает сигналы и рисует.
+## У каждого объекта есть владелец (кто поставил), список «своих» (для знамени) и,
+## если у типа задано storage_slots, хранилище ItemStorage.
 
 signal added(index: int)
 ## Состояние изменилось (зажёгся/погас костёр, подбросили дрова).
@@ -18,6 +21,13 @@ var kinds: PackedStringArray = PackedStringArray()
 var positions: PackedVector3Array = PackedVector3Array()
 var yaws: PackedFloat32Array = PackedFloat32Array()
 var fuel: PackedFloat32Array = PackedFloat32Array()
+var owners: PackedStringArray = PackedStringArray()
+## Список игроков с правом (для знамени базы).
+var auth: Array[PackedStringArray] = []
+## Хранилище объекта или null.
+var storages: Array[ItemStorage] = []
+## Справочник предметов для хранилищ (задаёт сессия).
+var db: ItemDB
 
 var _types: Dictionary = {}
 
@@ -49,6 +59,51 @@ func is_lit(index: int) -> bool:
 	return fuel[index] > 0.0
 
 
+func has_storage(index: int) -> bool:
+	return index >= 0 and index < storages.size() and storages[index] != null
+
+
+func claim_radius(kind: String) -> float:
+	return JsonData.get_float(type_def(kind), "claim_radius_m", 0.0)
+
+
+func is_authorized(index: int, who: String) -> bool:
+	return auth[index].has(who)
+
+
+func authorize(index: int, who: String) -> void:
+	if not auth[index].has(who):
+		auth[index].append(who)
+		changed.emit(index)
+
+
+func deauthorize(index: int, who: String) -> void:
+	var at: int = auth[index].find(who)
+	if at >= 0:
+		auth[index].remove_at(at)
+		changed.emit(index)
+
+
+func clear_auth(index: int) -> void:
+	auth[index] = PackedStringArray()
+	changed.emit(index)
+
+
+## Опустить объект на высоту y (если пол под ним обрушился).
+func drop_to(index: int, y: float) -> void:
+	positions[index].y = y
+	changed.emit(index)
+
+
+## Пересекается ли объём box с каким-нибудь объектом (условный куб 1,2 × 1,2 × 1,2 м).
+func blocks_box(box: AABB) -> bool:
+	for i: int in kinds.size():
+		var p: Vector3 = positions[i]
+		if box.intersects(AABB(Vector3(p.x - 0.6, p.y, p.z - 0.6), Vector3(1.2, 1.2, 1.2))):
+			return true
+	return false
+
+
 ## Можно ли поставить объект в точку (не слишком близко к другим).
 func can_place(pos: Vector3) -> bool:
 	for i: int in kinds.size():
@@ -58,13 +113,12 @@ func can_place(pos: Vector3) -> bool:
 
 
 ## Ставит объект. Возвращает индекс или -1.
-func place(kind: String, pos: Vector3, yaw: float) -> int:
+func place(kind: String, pos: Vector3, yaw: float, owner_id: String = "") -> int:
 	if not _types.has(kind) or not can_place(pos):
 		return -1
-	kinds.append(kind)
-	positions.append(pos)
-	yaws.append(yaw)
-	fuel.append(JsonData.get_float(type_def(kind), "initial_fuel_s", 0.0))
+	_append(kind, pos, yaw, JsonData.get_float(type_def(kind), "initial_fuel_s", 0.0), owner_id)
+	if claim_radius(kind) > 0.0 and not owner_id.is_empty():
+		auth[kinds.size() - 1].append(owner_id)
 	var i: int = kinds.size() - 1
 	added.emit(i)
 	return i
@@ -117,6 +171,17 @@ func add_fuel(index: int, wood: int) -> void:
 	changed.emit(index)
 
 
+func _append(kind: String, pos: Vector3, yaw: float, p_fuel: float, owner_id: String) -> void:
+	kinds.append(kind)
+	positions.append(pos)
+	yaws.append(yaw)
+	fuel.append(p_fuel)
+	owners.append(owner_id)
+	auth.append(PackedStringArray())
+	var slots: int = JsonData.get_int(type_def(kind), "storage_slots", 0)
+	storages.append(ItemStorage.new(db, slots) if slots > 0 else null)
+
+
 func tick(delta: float) -> void:
 	for i: int in kinds.size():
 		if fuel[i] > 0.0:
@@ -131,6 +196,9 @@ func clear() -> void:
 	positions.clear()
 	yaws.clear()
 	fuel.clear()
+	owners.clear()
+	auth.clear()
+	storages.clear()
 	cleared.emit()
 
 
@@ -138,7 +206,11 @@ func to_dict() -> Dictionary:
 	var list: Array = []
 	for i: int in kinds.size():
 		var p: Vector3 = positions[i]
-		list.append([kinds[i], snappedf(p.x, 0.01), snappedf(p.y, 0.01), snappedf(p.z, 0.01), snappedf(yaws[i], 0.01), snappedf(fuel[i], 0.1)])
+		var e: Array = [kinds[i], snappedf(p.x, 0.01), snappedf(p.y, 0.01), snappedf(p.z, 0.01), snappedf(yaws[i], 0.01), snappedf(fuel[i], 0.1),
+			owners[i], Array(auth[i])]
+		if storages[i] != null:
+			e.append(storages[i].to_dict())
+		list.append(e)
 	return {"objects": list}
 
 
@@ -150,8 +222,12 @@ func from_dict(d: Dictionary) -> void:
 	for e: Variant in list:
 		if typeof(e) != TYPE_ARRAY or (e as Array).size() < 6 or not _types.has(String(e[0])):
 			continue
-		kinds.append(String(e[0]))
-		positions.append(Vector3(float(e[1]), float(e[2]), float(e[3])))
-		yaws.append(float(e[4]))
-		fuel.append(maxf(float(e[5]), 0.0))
-		added.emit(kinds.size() - 1)
+		var a: Array = e
+		# Формат этапа 1 — 6 полей; с этапа 2 добавлены владелец, список права и хранилище.
+		_append(String(a[0]), Vector3(float(a[1]), float(a[2]), float(a[3])), float(a[4]), maxf(float(a[5]), 0.0), String(a[6]) if a.size() > 6 else "")
+		var i: int = kinds.size() - 1
+		if a.size() > 7 and typeof(a[7]) == TYPE_ARRAY:
+			auth[i] = PackedStringArray(a[7] as Array)
+		if a.size() > 8 and typeof(a[8]) == TYPE_DICTIONARY and storages[i] != null:
+			storages[i].from_dict(a[8])
+		added.emit(i)

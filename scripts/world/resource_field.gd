@@ -128,6 +128,35 @@ func hit_radius(index: int) -> float:
 	return JsonData.get_float(type_of(index), "radius", 0.8) * scales[index]
 
 
+## Препятствие для персонажа: радиус и высота цилиндра (0 — сквозь узел можно пройти, например куст).
+func collider_radius(index: int) -> float:
+	return JsonData.get_float(type_of(index), "collider_radius", 0.0) * scales[index]
+
+
+func collider_height(index: int) -> float:
+	return JsonData.get_float(type_of(index), "collider_height", 1.0) * scales[index]
+
+
+## Мешает ли какой-нибудь узел (в любом состоянии — истощённый вырастет снова) объёму box.
+## Для проверки места постройки. Без физики: по сетке ячеек.
+func blocks_box(box: AABB) -> bool:
+	var c0: Vector2i = _cell_of(box.position - Vector3(2.0, 0.0, 2.0))
+	var c1: Vector2i = _cell_of(box.end + Vector3(2.0, 0.0, 2.0))
+	for cz: int in range(c0.y, c1.y + 1):
+		for cx: int in range(c0.x, c1.x + 1):
+			var key: Vector2i = Vector2i(cx, cz)
+			if not _grid.has(key):
+				continue
+			var arr: PackedInt32Array = _grid[key]
+			for i: int in arr:
+				var r: float = maxf(collider_radius(i), 0.3)
+				var h: float = maxf(collider_height(i), 1.0)
+				var p: Vector3 = positions[i]
+				if box.intersects(AABB(Vector3(p.x - r, p.y - 0.2, p.z - r), Vector3(r * 2.0, h + 0.2, r * 2.0))):
+					return true
+	return false
+
+
 ## Ближайший доступный узел на луче взгляда в пределах дальности reach_override (или reach).
 ## Возвращает индекс или -1.
 func find_target(origin: Vector3, dir: Vector3, reach_override: float = -1.0) -> int:
