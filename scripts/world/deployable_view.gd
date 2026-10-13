@@ -56,6 +56,11 @@ func _on_added(i: int) -> void:
 		"base_banner":
 			_add_mesh(root, "base_banner")
 			_add_box_body(root, Vector3(0.3, 2.6, 0.3), 1.3)
+		"sleeping_bag":
+			_add_mesh(root, "sleeping_bag")
+		"bed":
+			_add_mesh(root, "bed")
+			_add_box_body(root, Vector3(1.0, 0.5, 2.0), 0.25)
 		_:
 			push_error("DeployableView: нет модели для %s" % kind)
 	add_child(root)
@@ -129,7 +134,30 @@ func _mesh(key: String) -> Mesh:
 				_meshes[key] = _make_storage_box()
 			"base_banner":
 				_meshes[key] = _make_banner()
+			"sleeping_bag":
+				_meshes[key] = _make_sleeping_bag()
+			"bed":
+				_meshes[key] = _make_bed()
 	return _meshes[key]
+
+
+## Спальный мешок (этап 3): плоский валик и светлый край-подушка.
+static func _make_sleeping_bag() -> ArrayMesh:
+	var b: WorldMeshes.Builder = WorldMeshes.Builder.new()
+	b.add(WorldMeshes._box(Vector3(0.8, 0.16, 1.9)), Transform3D(Basis.IDENTITY, Vector3(0.0, 0.08, 0.0)), Color(0.31, 0.42, 0.32))
+	b.add(WorldMeshes._box(Vector3(0.82, 0.18, 0.5)), Transform3D(Basis.IDENTITY, Vector3(0.0, 0.09, -0.75)), Color(0.6, 0.42, 0.27))
+	return b.commit()
+
+
+## Кровать (этап 3): деревянная рама, матрас и подушка.
+static func _make_bed() -> ArrayMesh:
+	var b: WorldMeshes.Builder = WorldMeshes.Builder.new()
+	var wood: Color = Color(0.45, 0.3, 0.18)
+	b.add(WorldMeshes._box(Vector3(1.0, 0.25, 2.0)), Transform3D(Basis.IDENTITY, Vector3(0.0, 0.2, 0.0)), wood)
+	b.add(WorldMeshes._box(Vector3(1.0, 0.7, 0.08)), Transform3D(Basis.IDENTITY, Vector3(0.0, 0.35, -0.98)), wood.darkened(0.2))
+	b.add(WorldMeshes._box(Vector3(0.9, 0.14, 1.85)), Transform3D(Basis.IDENTITY, Vector3(0.0, 0.39, 0.03)), Color(0.31, 0.42, 0.32))
+	b.add(WorldMeshes._box(Vector3(0.6, 0.1, 0.35)), Transform3D(Basis.IDENTITY, Vector3(0.0, 0.5, -0.7)), Color(0.85, 0.82, 0.74))
+	return b.commit()
 
 
 static func _mat(c: Color) -> StandardMaterial3D:
