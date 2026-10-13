@@ -1,14 +1,14 @@
 {
-	"_comment": "Ресурсные узлы мира этапа 1. Расстановка детерминирована по seed ландшафта. stock — запас узла, yield — отдача за удар до множителя инструмента, respawn_s — время восстановления после истощения. radius/hit_height — зона попадания (с запасом, чтобы не требовать точного прицеливания). collider_radius/collider_height — цилиндр-препятствие для персонажа (этап 2; у кустов нет — сквозь них можно пройти), умножается на масштаб узла.",
+	"_comment": "Ресурсные узлы мира этапа 1. Расстановка детерминирована по seed ландшафта. stock — запас узла, yield — отдача за удар до множителя инструмента, respawn_s — время восстановления после истощения. radius/hit_height — зона попадания (с запасом, чтобы не требовать точного прицеливания). collider_radius/collider_height — цилиндр-препятствие для персонажа (этап 2; у кустов нет — сквозь них можно пройти), умножается на масштаб узла. С этапа 3: density — плотность в мире по биомам (узлов на 1000 м²; count — только для маленькой тестовой карты).",
 	"seed_offset": 7,
 	"reach_m": 3.0,
 	"spawn_clear_radius_m": 6.0,
 	"min_slope_free": 0.9,
 	"water_margin_m": 0.4,
 	"types": [
-		{"id": "tree", "item": "wood", "name": "NODE_TREE", "count": 220, "stock": 150, "yield": 5, "respawn_s": 900.0, "radius": 0.9, "hit_height": 1.3, "collider_radius": 0.3, "collider_height": 3.0},
-		{"id": "rock", "item": "stone", "name": "NODE_ROCK", "count": 70, "stock": 120, "yield": 5, "respawn_s": 900.0, "radius": 1.1, "hit_height": 0.4, "collider_radius": 0.85, "collider_height": 1.0},
-		{"id": "ore", "item": "metal_ore", "name": "NODE_ORE", "count": 30, "stock": 60, "yield": 3, "respawn_s": 1200.0, "radius": 1.1, "hit_height": 0.4, "collider_radius": 0.85, "collider_height": 1.0},
-		{"id": "bush", "item": "berries", "name": "NODE_BUSH", "count": 70, "stock": 5, "yield": 1, "respawn_s": 420.0, "radius": 0.8, "hit_height": 0.5}
+		{"id": "tree", "item": "wood", "name": "NODE_TREE", "count": 220, "stock": 150, "yield": 5, "respawn_s": 900.0, "radius": 0.9, "hit_height": 1.3, "collider_radius": 0.3, "collider_height": 3.0, "density": {"coast": 0.4, "plain": 1.0, "forest": 9.0, "mountain": 0.8}},
+		{"id": "rock", "item": "stone", "name": "NODE_ROCK", "count": 70, "stock": 120, "yield": 5, "respawn_s": 900.0, "radius": 1.1, "hit_height": 0.4, "collider_radius": 0.85, "collider_height": 1.0, "density": {"coast": 0.8, "plain": 0.5, "forest": 0.4, "mountain": 3.5}},
+		{"id": "ore", "item": "metal_ore", "name": "NODE_ORE", "count": 30, "stock": 60, "yield": 3, "respawn_s": 1200.0, "radius": 1.1, "hit_height": 0.4, "collider_radius": 0.85, "collider_height": 1.0, "density": {"coast": 0.05, "plain": 0.08, "forest": 0.08, "mountain": 1.5}},
+		{"id": "bush", "item": "berries", "name": "NODE_BUSH", "count": 70, "stock": 5, "yield": 1, "respawn_s": 420.0, "radius": 0.8, "hit_height": 0.5, "density": {"coast": 0.3, "plain": 1.2, "forest": 1.4, "mountain": 0.1}}
 	]
 }
