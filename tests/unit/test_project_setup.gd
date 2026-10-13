@@ -101,12 +101,19 @@ func test_app_icons_are_png_and_exist() -> void:
 	for section: String in cfg.get_sections():
 		if not section.ends_with(".options"):
 			continue
-		for key: String in ["launcher_icons/main_192x192", "launcher_icons/adaptive_foreground_432x432", "launcher_icons/adaptive_background_432x432"]:
+		for key: String in ["launcher_icons/main_192x192", "launcher_icons/adaptive_foreground_432x432", "launcher_icons/adaptive_background_432x432", "launcher_icons/adaptive_monochrome_432x432"]:
 			var path: String = String(cfg.get_value(section, key, ""))
 			assert_true(path.ends_with(".png") and FileAccess.file_exists(path), "%s: %s" % [section, key])
 		var img: Image = Image.new()
 		img.load_png_from_buffer(FileAccess.get_file_as_bytes(String(cfg.get_value(section, "launcher_icons/adaptive_foreground_432x432"))))
 		assert_eq(img.get_size(), Vector2i(432, 432), "передний слой адаптивной иконки 432×432")
+		# Монохромный слой (Android 13+): 432×432, силуэт в альфа-канале, края прозрачные.
+		var mono: Image = Image.new()
+		mono.load_png_from_buffer(FileAccess.get_file_as_bytes(String(cfg.get_value(section, "launcher_icons/adaptive_monochrome_432x432"))))
+		assert_eq(mono.get_size(), Vector2i(432, 432), "монохромный слой 432×432")
+		assert_true(mono.detect_alpha() != Image.ALPHA_NONE, "монохромный слой с прозрачностью")
+		assert_eq(mono.get_pixel(10, 10).a, 0.0, "угол прозрачный")
+		assert_gt(mono.get_pixel(179, 222).a, 0.5, "на рукояти — силуэт")
 
 
 func test_autoloads_present() -> void:
