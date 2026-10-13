@@ -1,0 +1,55 @@
+{
+	"_comment": "Строительство (этап 2). Мировая сетка: клетка grid_m × grid_m, высота этажа wall_h_m, высоты привязаны к шагу height_step_m. materials — порядок улучшения (дерево → камень → металл). decay_full_s — за сколько секунд игры деталь без обслуживания теряет всю прочность. upkeep_fraction_per_hour — доля стоимости детали, которую знамя базы списывает за час игры. pieces.*.materials — разрешённые материалы детали: стоимость и прочность. Время — секунды игрового процесса (мир офлайн не живёт, пока игра закрыта).",
+	"grid_m": 3.0,
+	"wall_h_m": 3.0,
+	"height_step_m": 0.25,
+	"wall_thickness_m": 0.2,
+	"floor_thickness_m": 0.2,
+	"doorway_w_m": 1.2,
+	"doorway_h_m": 2.2,
+	"roof_rise_m": 1.5,
+	"foundation": {"min_above_ground_m": 0.15, "max_above_ground_m": 2.5, "max_buried_m": 0.3, "below_ground_m": 0.4},
+	"aim_cell_m": 4.0,
+	"aim_edge_m": 2.0,
+	"build_range_m": 8.0,
+	"target_reach_m": 4.5,
+	"tick_s": 10.0,
+	"repair_cost_fraction": 0.5,
+	"demolish_refund": 0.5,
+	"materials": {
+		"wood": {"name": "MAT_WOOD", "decay_full_s": 10800.0, "upkeep_fraction_per_hour": 0.05},
+		"stone": {"name": "MAT_STONE", "decay_full_s": 18000.0, "upkeep_fraction_per_hour": 0.05},
+		"metal": {"name": "MAT_METAL", "decay_full_s": 28800.0, "upkeep_fraction_per_hour": 0.05}
+	},
+	"material_order": ["wood", "stone", "metal"],
+	"pieces": {
+		"foundation": {"name": "PIECE_FOUNDATION", "slot": "cell", "materials": {
+			"wood": {"cost": {"wood": 60}, "hp": 300},
+			"stone": {"cost": {"stone": 100}, "hp": 700},
+			"metal": {"cost": {"metal": 25}, "hp": 1400}}},
+		"wall": {"name": "PIECE_WALL", "slot": "edge", "materials": {
+			"wood": {"cost": {"wood": 40}, "hp": 250},
+			"stone": {"cost": {"stone": 60}, "hp": 600},
+			"metal": {"cost": {"metal": 15}, "hp": 1200}}},
+		"doorway": {"name": "PIECE_DOORWAY", "slot": "edge", "materials": {
+			"wood": {"cost": {"wood": 35}, "hp": 220},
+			"stone": {"cost": {"stone": 50}, "hp": 550},
+			"metal": {"cost": {"metal": 12}, "hp": 1100}}},
+		"door": {"name": "PIECE_DOOR", "slot": "door", "materials": {
+			"wood": {"cost": {"wood": 50}, "hp": 200},
+			"metal": {"cost": {"metal": 20}, "hp": 800}}},
+		"floor": {"name": "PIECE_FLOOR", "slot": "cell", "materials": {
+			"wood": {"cost": {"wood": 30}, "hp": 200},
+			"stone": {"cost": {"stone": 50}, "hp": 500},
+			"metal": {"cost": {"metal": 12}, "hp": 1000}}},
+		"roof": {"name": "PIECE_ROOF", "slot": "cell", "materials": {
+			"wood": {"cost": {"wood": 30}, "hp": 200},
+			"stone": {"cost": {"stone": 50}, "hp": 500},
+			"metal": {"cost": {"metal": 12}, "hp": 1000}}},
+		"stairs": {"name": "PIECE_STAIRS", "slot": "stairs", "materials": {
+			"wood": {"cost": {"wood": 40}, "hp": 200},
+			"stone": {"cost": {"stone": 60}, "hp": 500},
+			"metal": {"cost": {"metal": 15}, "hp": 1000}}}
+	},
+	"piece_order": ["foundation", "wall", "doorway", "door", "floor", "roof", "stairs"]
+}
