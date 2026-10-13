@@ -1,5 +1,5 @@
 {
-	"_comment": "Размещаемые объекты. station_radius — на каком расстоянии работает как станция крафта. Костёр — станция только пока горит. С этапа 2: storage_slots — ячеек хранилища (ящик, запас обслуживания знамени), claim_radius_m — радиус права владения знамени базы (по горизонтали).",
+	"_comment": "Размещаемые объекты. station_radius — на каком расстоянии работает как станция крафта. Костёр — станция только пока горит. С этапа 2: storage_slots — ячеек хранилища (ящик, запас обслуживания знамени), claim_radius_m — радиус права владения знамени базы (по горизонтали). С этапа 3: respawn_cooldown_s — точка возрождения (спальник, кровать) и пауза между возрождениями на ней.",
 	"place_distance_m": 2.0,
 	"min_spacing_m": 1.6,
 	"interact_radius_m": 2.6,
@@ -7,6 +7,8 @@
 		"campfire": {"item": "campfire", "name": "DEPLOY_CAMPFIRE", "station": "campfire", "station_radius": 3.0, "initial_fuel_s": 180.0, "fuel_per_wood_s": 30.0, "max_fuel_s": 900.0, "refuel_wood": 5, "light_range": 9.0},
 		"workbench_1": {"item": "workbench_1", "name": "DEPLOY_WORKBENCH_1", "station": "workbench_1", "station_radius": 3.0},
 		"storage_box": {"item": "storage_box", "name": "DEPLOY_STORAGE_BOX", "storage_slots": 18},
-		"base_banner": {"item": "base_banner", "name": "DEPLOY_BASE_BANNER", "storage_slots": 12, "claim_radius_m": 18.0}
+		"base_banner": {"item": "base_banner", "name": "DEPLOY_BASE_BANNER", "storage_slots": 12, "claim_radius_m": 18.0},
+		"sleeping_bag": {"item": "sleeping_bag", "name": "DEPLOY_SLEEPING_BAG", "respawn_cooldown_s": 300.0},
+		"bed": {"item": "bed", "name": "DEPLOY_BED", "respawn_cooldown_s": 120.0}
 	}
 }

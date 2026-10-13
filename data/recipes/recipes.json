@@ -1,5 +1,5 @@
 {
-	"_comment": "Рецепты. station: \"\" — в руках, иначе тип станции рядом (campfire, workbench_1; workbench_2/3 — на следующих этапах). time — секунды. Порядок в списке = порядок в меню.",
+	"_comment": "Рецепты. station: \"\" — в руках, иначе тип станции рядом (campfire, workbench_1; workbench_2/3 — на следующих этапах). time — секунды. Порядок в списке = порядок в меню. Этап 3: патроны самопала пока без пороха (упрощение до этапа 5).",
 	"max_queue": 8,
 	"recipes": [
 		{"id": "stone_axe", "result": "stone_axe", "count": 1, "time": 4.0, "station": "", "ingredients": {"wood": 30, "stone": 15}},
@@ -11,6 +11,14 @@
 		{"id": "metal_pickaxe", "result": "metal_pickaxe", "count": 1, "time": 8.0, "station": "workbench_1", "ingredients": {"wood": 40, "metal": 30}},
 		{"id": "storage_box", "result": "storage_box", "count": 1, "time": 4.0, "station": "", "ingredients": {"wood": 80}},
 		{"id": "base_banner", "result": "base_banner", "count": 1, "time": 5.0, "station": "", "ingredients": {"wood": 100, "stone": 30}},
-		{"id": "code_lock", "result": "code_lock", "count": 1, "time": 5.0, "station": "workbench_1", "ingredients": {"metal": 8, "wood": 10}}
+		{"id": "code_lock", "result": "code_lock", "count": 1, "time": 5.0, "station": "workbench_1", "ingredients": {"metal": 8, "wood": 10}},
+		{"id": "stone_spear", "result": "stone_spear", "count": 1, "time": 4.0, "station": "", "ingredients": {"wood": 50, "stone": 10}},
+		{"id": "bow", "result": "bow", "count": 1, "time": 6.0, "station": "", "ingredients": {"wood": 120, "hide": 4}},
+		{"id": "arrow", "result": "arrow", "count": 4, "time": 3.0, "station": "", "ingredients": {"wood": 12, "stone": 4}},
+		{"id": "cooked_meat", "result": "cooked_meat", "count": 1, "time": 4.0, "station": "campfire", "ingredients": {"meat": 1, "wood": 1}},
+		{"id": "sleeping_bag", "result": "sleeping_bag", "count": 1, "time": 5.0, "station": "", "ingredients": {"hide": 8, "wood": 20}},
+		{"id": "bed", "result": "bed", "count": 1, "time": 10.0, "station": "workbench_1", "ingredients": {"hide": 20, "wood": 120, "metal": 10}},
+		{"id": "crude_gun", "result": "crude_gun", "count": 1, "time": 12.0, "station": "workbench_1", "ingredients": {"metal": 60, "wood": 40}},
+		{"id": "gun_ammo", "result": "gun_ammo", "count": 2, "time": 4.0, "station": "workbench_1", "ingredients": {"metal": 4, "stone": 6}}
 	]
 }

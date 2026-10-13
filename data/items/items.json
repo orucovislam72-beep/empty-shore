@@ -1,8 +1,10 @@
 {
-	"_comment": "Предметы (этапы 1–2). name/desc — ключи перевода (data/i18n/strings.csv). kind: resource | tool | food | deployable. stack — размер стопки. tool.gather — множитель отдачи по типу добываемого предмета (0 = этим не добыть). tool.durability — число ударов до поломки.",
+	"_comment": "Предметы (этапы 1–2). name/desc — ключи перевода (data/i18n/strings.csv). kind: resource | tool | food | deployable. stack — размер стопки. tool.gather — множитель отдачи по типу добываемого предмета (0 = этим не добыть). tool.durability — число ударов до поломки. С этапа 3: tool.damage — урон инструментом по животным; kind weapon — оружие: weapon.type melee (ближний бой: damage, range_m) | bow (лук: ammo, speed_mps, gravity, spread_deg/aim_spread_deg) | gun (огнестрел: то же + mag — магазин, reload_s); durability — ударов/выстрелов до поломки; kind ammo — боеприпас (ammo.damage — урон снаряда, break_chance — доля стрел, ломающихся при попадании).",
 	"hand": {
 		"_comment": "Голые руки: используются, если активный слот пуст или в нём не инструмент.",
 		"swing_time": 0.8,
+		"damage": 6.0,
+		"range_m": 2.2,
 		"gather": {"wood": 0.4, "stone": 0.5, "metal_ore": 0.0, "berries": 1.0}
 	},
 	"items": {
@@ -13,17 +15,32 @@
 		"berries": {"name": "ITEM_BERRIES", "desc": "ITEM_BERRIES_DESC", "kind": "food", "stack": 20, "icon": "res://assets/icons/items/berries.svg",
 			"food": {"hunger": 10.0, "thirst": 4.0, "health": 1.0}},
 		"stone_axe": {"name": "ITEM_STONE_AXE", "desc": "ITEM_STONE_AXE_DESC", "kind": "tool", "stack": 1, "icon": "res://assets/icons/items/stone_axe.svg",
-			"tool": {"swing_time": 0.7, "durability": 150, "gather": {"wood": 1.6, "stone": 0.4, "metal_ore": 0.0, "berries": 1.0}}},
+			"tool": {"damage": 18.0, "swing_time": 0.7, "durability": 150, "gather": {"wood": 1.6, "stone": 0.4, "metal_ore": 0.0, "berries": 1.0}}},
 		"stone_pickaxe": {"name": "ITEM_STONE_PICKAXE", "desc": "ITEM_STONE_PICKAXE_DESC", "kind": "tool", "stack": 1, "icon": "res://assets/icons/items/stone_pickaxe.svg",
-			"tool": {"swing_time": 0.75, "durability": 150, "gather": {"wood": 0.4, "stone": 1.6, "metal_ore": 1.0, "berries": 1.0}}},
+			"tool": {"damage": 16.0, "swing_time": 0.75, "durability": 150, "gather": {"wood": 0.4, "stone": 1.6, "metal_ore": 1.0, "berries": 1.0}}},
 		"metal_axe": {"name": "ITEM_METAL_AXE", "desc": "ITEM_METAL_AXE_DESC", "kind": "tool", "stack": 1, "icon": "res://assets/icons/items/metal_axe.svg",
-			"tool": {"swing_time": 0.6, "durability": 400, "gather": {"wood": 2.6, "stone": 0.6, "metal_ore": 0.0, "berries": 1.0}}},
+			"tool": {"damage": 28.0, "swing_time": 0.6, "durability": 400, "gather": {"wood": 2.6, "stone": 0.6, "metal_ore": 0.0, "berries": 1.0}}},
 		"metal_pickaxe": {"name": "ITEM_METAL_PICKAXE", "desc": "ITEM_METAL_PICKAXE_DESC", "kind": "tool", "stack": 1, "icon": "res://assets/icons/items/metal_pickaxe.svg",
-			"tool": {"swing_time": 0.65, "durability": 400, "gather": {"wood": 0.6, "stone": 2.6, "metal_ore": 1.8, "berries": 1.0}}},
+			"tool": {"damage": 25.0, "swing_time": 0.65, "durability": 400, "gather": {"wood": 0.6, "stone": 2.6, "metal_ore": 1.8, "berries": 1.0}}},
 		"campfire": {"name": "ITEM_CAMPFIRE", "desc": "ITEM_CAMPFIRE_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/campfire.svg", "deploy": "campfire"},
 		"workbench_1": {"name": "ITEM_WORKBENCH_1", "desc": "ITEM_WORKBENCH_1_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/workbench_1.svg", "deploy": "workbench_1"},
 		"storage_box": {"name": "ITEM_STORAGE_BOX", "desc": "ITEM_STORAGE_BOX_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/storage_box.svg", "deploy": "storage_box"},
 		"base_banner": {"name": "ITEM_BASE_BANNER", "desc": "ITEM_BASE_BANNER_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/base_banner.svg", "deploy": "base_banner"},
-		"code_lock": {"name": "ITEM_CODE_LOCK", "desc": "ITEM_CODE_LOCK_DESC", "kind": "resource", "stack": 5, "icon": "res://assets/icons/items/code_lock.svg"}
+		"code_lock": {"name": "ITEM_CODE_LOCK", "desc": "ITEM_CODE_LOCK_DESC", "kind": "resource", "stack": 5, "icon": "res://assets/icons/items/code_lock.svg"},
+		"stone_spear": {"name": "ITEM_STONE_SPEAR", "desc": "ITEM_STONE_SPEAR_DESC", "kind": "weapon", "stack": 1, "icon": "res://assets/icons/items/stone_spear.svg",
+			"weapon": {"type": "melee", "swing_time": 0.85, "damage": 32.0, "range_m": 3.3, "durability": 120}},
+		"bow": {"name": "ITEM_BOW", "desc": "ITEM_BOW_DESC", "kind": "weapon", "stack": 1, "icon": "res://assets/icons/items/bow.svg",
+			"weapon": {"type": "bow", "swing_time": 1.0, "ammo": "arrow", "speed_mps": 48.0, "gravity": 9.8, "spread_deg": 3.0, "aim_spread_deg": 0.6, "durability": 150}},
+		"crude_gun": {"name": "ITEM_CRUDE_GUN", "desc": "ITEM_CRUDE_GUN_DESC", "kind": "weapon", "stack": 1, "icon": "res://assets/icons/items/crude_gun.svg",
+			"weapon": {"type": "gun", "swing_time": 0.5, "ammo": "gun_ammo", "mag": 1, "reload_s": 2.4, "speed_mps": 220.0, "gravity": 4.0, "spread_deg": 4.0, "aim_spread_deg": 1.0, "durability": 60}},
+		"arrow": {"name": "ITEM_ARROW", "desc": "ITEM_ARROW_DESC", "kind": "ammo", "stack": 64, "icon": "res://assets/icons/items/arrow.svg", "ammo": {"damage": 42.0, "break_chance": 1.0}},
+		"gun_ammo": {"name": "ITEM_GUN_AMMO", "desc": "ITEM_GUN_AMMO_DESC", "kind": "ammo", "stack": 64, "icon": "res://assets/icons/items/gun_ammo.svg", "ammo": {"damage": 70.0, "break_chance": 1.0}},
+		"meat": {"name": "ITEM_MEAT", "desc": "ITEM_MEAT_DESC", "kind": "food", "stack": 20, "icon": "res://assets/icons/items/meat.svg",
+			"food": {"hunger": 6.0, "thirst": 0.0, "health": -3.0}},
+		"cooked_meat": {"name": "ITEM_COOKED_MEAT", "desc": "ITEM_COOKED_MEAT_DESC", "kind": "food", "stack": 20, "icon": "res://assets/icons/items/cooked_meat.svg",
+			"food": {"hunger": 28.0, "thirst": -2.0, "health": 6.0}},
+		"hide": {"name": "ITEM_HIDE", "desc": "ITEM_HIDE_DESC", "kind": "resource", "stack": 200, "icon": "res://assets/icons/items/hide.svg"},
+		"sleeping_bag": {"name": "ITEM_SLEEPING_BAG", "desc": "ITEM_SLEEPING_BAG_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/sleeping_bag.svg", "deploy": "sleeping_bag"},
+		"bed": {"name": "ITEM_BED", "desc": "ITEM_BED_DESC", "kind": "deployable", "stack": 1, "icon": "res://assets/icons/items/bed.svg", "deploy": "bed"}
 	}
 }

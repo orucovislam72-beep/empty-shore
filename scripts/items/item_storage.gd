@@ -110,9 +110,15 @@ func put_from_inventory(inv: Inventory, inv_slot: int) -> int:
 		return 0
 	var id: String = inv.slot_id(inv_slot)
 	var n: int = inv.slot_count(inv_slot)
+	var loaded: int = inv.slot_ammo(inv_slot)
 	var left: int = add(id, n, inv.slot_durability(inv_slot))
 	var moved: int = n - left
 	if moved > 0:
+		# Патроны из магазина оружия ложатся рядом отдельной стопкой (в хранилище магазина нет).
+		if loaded > 0 and db != null:
+			var back: int = add(db.ammo_of(id), loaded)
+			if back > 0:
+				inv.add(db.ammo_of(id), back)
 		inv.remove_at(inv_slot, moved)
 	return moved
 

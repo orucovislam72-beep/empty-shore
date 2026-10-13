@@ -1,7 +1,8 @@
 class_name Inventory
 extends RefCounted
 ## Инвентарь: быстрая панель (6), рюкзак (24), экипировка (4). Чистая логика без сцен.
-## Слоты хранятся в упакованных массивах (id, количество, прочность), без объектов на слот.
+## Слоты хранятся в упакованных массивах (id, количество, прочность, патроны в магазине оружия),
+## без объектов на слот. Патроны в магазине (этап 3) переезжают вместе с оружием при переносе.
 ## Номера слотов: 0..5 — быстрая панель, 6..29 — рюкзак, 30..33 — экипировка.
 
 signal changed
@@ -18,6 +19,7 @@ var db: ItemDB
 var _ids: PackedStringArray = PackedStringArray()
 var _counts: PackedInt32Array = PackedInt32Array()
 var _dur: PackedInt32Array = PackedInt32Array()
+var _ammo: PackedInt32Array = PackedInt32Array()
 
 
 func _init(p_db: ItemDB = null) -> void:
@@ -26,6 +28,7 @@ func _init(p_db: ItemDB = null) -> void:
 	_counts.resize(TOTAL)
 	_dur.resize(TOTAL)
 	_dur.fill(-1)
+	_ammo.resize(TOTAL)
 
 
 static func is_hotbar(slot: int) -> bool:
@@ -46,6 +49,18 @@ func slot_count(slot: int) -> int:
 
 func slot_durability(slot: int) -> int:
 	return _dur[slot]
+
+
+## Патроны в магазине оружия в слоте.
+func slot_ammo(slot: int) -> int:
+	return _ammo[slot]
+
+
+func set_slot_ammo(slot: int, n: int) -> void:
+	if _counts[slot] <= 0:
+		return
+	_ammo[slot] = maxi(n, 0)
+	changed.emit()
 
 
 func is_empty(slot: int) -> bool:
@@ -90,7 +105,7 @@ func add(id: String, count: int, durability: int = -1) -> int:
 				_counts[i] += put
 				left -= put
 	# Инструменты, еда и размещаемое — сначала в быструю панель; ресурсы — сначала в рюкзак.
-	var hotbar_first: bool = db.kind(id) != ItemDB.KIND_RESOURCE
+	var hotbar_first: bool = db.kind(id) != ItemDB.KIND_RESOURCE and db.kind(id) != ItemDB.KIND_AMMO
 	for pass_i: int in 2:
 		var from: int = HOTBAR_START if (pass_i == 0) == hotbar_first else BACKPACK_START
 		var to: int = BACKPACK_START if from == HOTBAR_START else EQUIP_START
@@ -156,7 +171,7 @@ func move(from: int, to: int, amount: int = 0) -> bool:
 	if not accepts(to, id):
 		return false
 	if _counts[to] <= 0:
-		_store(to, id, n, _dur[from])
+		_store(to, id, n, _dur[from], _ammo[from] if n == _counts[from] else 0)
 		_counts[from] -= n
 		if _counts[from] <= 0:
 			_clear(from)
@@ -178,8 +193,9 @@ func move(from: int, to: int, amount: int = 0) -> bool:
 	var t_id: String = _ids[to]
 	var t_n: int = _counts[to]
 	var t_d: int = _dur[to]
-	_store(to, id, _counts[from], _dur[from])
-	_store(from, t_id, t_n, t_d)
+	var t_a: int = _ammo[to]
+	_store(to, id, _counts[from], _dur[from], _ammo[from])
+	_store(from, t_id, t_n, t_d, t_a)
 	changed.emit()
 	return true
 
@@ -218,7 +234,10 @@ func to_dict() -> Dictionary:
 	var slots: Array = []
 	for i: int in TOTAL:
 		if _counts[i] > 0:
-			slots.append([i, _ids[i], _counts[i], _dur[i]])
+			var e: Array = [i, _ids[i], _counts[i], _dur[i]]
+			if _ammo[i] > 0:
+				e.append(_ammo[i])
+			slots.append(e)
 	return {"slots": slots}
 
 
@@ -243,7 +262,7 @@ func from_dict(d: Dictionary) -> int:
 		if slot < 0 or slot >= TOTAL or not db.has(id) or n <= 0 or not accepts(slot, id):
 			skipped += 1
 			continue
-		_store(slot, id, mini(n, db.max_stack(id)), int(a[3]))
+		_store(slot, id, mini(n, db.max_stack(id)), int(a[3]), maxi(int(a[4]), 0) if a.size() > 4 else 0)
 	changed.emit()
 	return skipped
 
@@ -255,13 +274,15 @@ func _first_empty(from: int, to: int) -> int:
 	return -1
 
 
-func _store(slot: int, id: String, count: int, durability: int) -> void:
+func _store(slot: int, id: String, count: int, durability: int, ammo: int = 0) -> void:
 	_ids[slot] = id
 	_counts[slot] = count
 	_dur[slot] = durability
+	_ammo[slot] = ammo
 
 
 func _clear(slot: int) -> void:
 	_ids[slot] = ""
 	_counts[slot] = 0
 	_dur[slot] = -1
+	_ammo[slot] = 0
