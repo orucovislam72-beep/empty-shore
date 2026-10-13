@@ -16,6 +16,11 @@
 - иконки предметов `assets/icons/items/*.svg` и показателей `assets/icons/hud/*.svg` — нарисованы вручную в SVG (плоский стиль);
 - процедурные модели: трава, вода (`scripts/world/test_terrain.gd`), деревья, камни, рудные камни, кусты
   (`scripts/world/resource_view.gd`), костёр и верстак (`scripts/world/deployable_view.gd`), топор и кирка в руке
-  (`scripts/player/held_item_view.gd`) — строятся кодом из примитивов Godot.
+  (`scripts/player/held_item_view.gd`) — строятся кодом из примитивов Godot;
+- этап 2: детали построек (фундамент, стена, проём, дверь, перекрытие, крыша, лестница, кодовый замок —
+  `scripts/building/building_view.gd`), ящик и знамя базы (`scripts/world/deployable_view.gd`) — процедурные модели из примитивов;
+  иконки предметов `storage_box.svg`, `base_banner.svg`, `code_lock.svg` — нарисованы вручную в SVG;
+  монохромный слой адаптивной иконки Android 13+ `assets/icons/adaptive_monochrome_432.png` (силуэт топора) —
+  свой рисунок, исходник `assets/icons/source/adaptive_monochrome.svg`, PNG нарисован скриптом Pillow.
 
-Внешних моделей, текстур и звуков на этапе 1 нет. Иконка этапа 0 (`app_icon.svg`) заменена сгенерированной иконкой.
+Внешних моделей, текстур и звуков на этапах 1–2 нет; на этапе 2 сторонних ассетов не добавлено. Иконка этапа 0 (`app_icon.svg`) заменена сгенерированной иконкой.
