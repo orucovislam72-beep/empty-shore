@@ -1,0 +1,140 @@
+# CI «Пустой Берег»: тесты логики на каждый push/PR, сборка Android на main и вручную.
+# Ключ подписи и пароли — только в секретах репозитория (Settings → Secrets and variables → Actions):
+#   ANDROID_KEYSTORE_BASE64   — release-ключ (.jks/.keystore) в base64
+#   ANDROID_KEYSTORE_ALIAS    — alias ключа
+#   ANDROID_KEYSTORE_PASSWORD — пароль хранилища/ключа
+# Без секретов собирается только debug APK (подписан одноразовым debug-ключом, созданным в CI).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.7.2"
+  GODOT_SHA512: "9aa00f7a605200940bce3027a567b782f49bd8e940dd06ae9e987bd65aee1b1467edd56ed84fcdcbdd44354bf613bdbb4e5d2913e925850368e150c59ed54c65"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Тесты (GUT, headless)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Кэш Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
+      - name: Скачать Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot && cd ~/godot
+          curl -fsSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          echo "${GODOT_SHA512}  godot.zip" | sha512sum -c -
+          unzip -q godot.zip && rm godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+
+      - name: Тесты
+        run: GODOT=~/godot/godot tools/run_tests.sh
+
+      - name: Дымовой запуск сцен
+        run: GODOT=~/godot/godot tools/smoke_run.sh
+
+  android:
+    name: Сборка Android (APK/AAB)
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
+      KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Пакеты Android SDK (версии из platform/android/java/app/config.gradle Godot 4.7.2)
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platform-tools" "build-tools;36.1.0" "platforms;android-36" "ndk;29.0.14206865" "cmake;3.22.1"
+
+      - name: Кэш Godot и шаблонов экспорта
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64-with-templates
+
+      - name: Скачать Godot и шаблоны экспорта
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot && cd ~/godot
+          curl -fsSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          echo "${GODOT_SHA512}  godot.zip" | sha512sum -c -
+          unzip -q godot.zip && rm godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          curl -fsSL -o templates.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          curl -fsSL -o SHA512-SUMS.txt "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/SHA512-SUMS.txt"
+          grep " Godot_v${GODOT_VERSION}-stable_export_templates.tpz$" SHA512-SUMS.txt | sed "s/Godot_v${GODOT_VERSION}-stable_export_templates.tpz/templates.tpz/" | sha512sum -c -
+          unzip -q templates.tpz
+          dest=~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mkdir -p "${dest}"
+          mv templates/* "${dest}/"
+          rm -rf templates templates.tpz SHA512-SUMS.txt
+
+      - name: Debug-ключ (одноразовый, только для CI)
+        run: |
+          keytool -genkeypair -v -keystore "${RUNNER_TEMP}/debug.keystore" -storepass android -alias androiddebugkey \
+            -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          {
+            echo "GODOT_ANDROID_KEYSTORE_DEBUG_PATH=${RUNNER_TEMP}/debug.keystore"
+            echo "GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey"
+            echo "GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android"
+          } >> "${GITHUB_ENV}"
+
+      - name: Debug APK
+        run: GODOT=~/godot/godot tools/export_android.sh apk debug
+
+      - name: Release-ключ из секретов
+        if: env.KEYSTORE_B64 != ''
+        run: |
+          echo "${KEYSTORE_B64}" | base64 -d > "${RUNNER_TEMP}/release.keystore"
+          {
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=${RUNNER_TEMP}/release.keystore"
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_USER=${KEYSTORE_ALIAS}"
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=${KEYSTORE_PASSWORD}"
+          } >> "${GITHUB_ENV}"
+
+      - name: Release APK и AAB
+        if: env.KEYSTORE_B64 != ''
+        run: |
+          GODOT=~/godot/godot tools/export_android.sh apk release
+          GODOT=~/godot/godot tools/export_android.sh aab release
+
+      - name: Удалить ключи
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/release.keystore" "${RUNNER_TEMP}/debug.keystore"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: empty-shore-android-${{ github.sha }}
+          path: build/android/*
+          if-no-files-found: error
