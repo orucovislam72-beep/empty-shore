@@ -1,6 +1,6 @@
 class_name KeypadScreen
 extends CanvasLayer
-## Кодовый замок: экран с крупными цифрами 0–9 (кнопки 96 × 80, больше 48 dp), «Стереть» и «Готово».
+## Кодовый замок: экран с крупными цифрами 0–9 (кнопки 112 × 80, больше 48 dp), «Стереть» и «Готово».
 ## Режимы: задать код (новый замок), ввести код (чужая или запертая дверь), сменить код.
 ## Проверку кода делает SurvivalSession; экран только собирает 4 цифры и отдаёт их сигналом.
 
@@ -15,7 +15,7 @@ var mode: Mode = Mode.ENTER
 var door_id: int = -1
 var _code: String = ""
 var _title: Label
-var _display: Label
+var _cells: Array[Label] = []
 var _ok: Button
 
 
@@ -36,12 +36,27 @@ func _ready() -> void:
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title.add_theme_font_size_override(&"font_size", 26)
 	box.add_child(_title)
-	_display = Label.new()
-	_display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_display.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-	_display.add_theme_font_size_override(&"font_size", 48)
-	_display.add_theme_color_override(&"font_color", Color(0.85, 0.63, 0.25))
-	box.add_child(_display)
+	# Четыре клетки кода: набранные цифры (при вводе чужого кода — точки).
+	var cells: HBoxContainer = HBoxContainer.new()
+	cells.alignment = BoxContainer.ALIGNMENT_CENTER
+	cells.add_theme_constant_override(&"separation", 12)
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.bg_color = Color(0.1, 0.11, 0.12, 1.0)
+	sb.border_color = Color(0.85, 0.63, 0.25)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(6)
+	for i: int in CODE_LEN:
+		var l: Label = Label.new()
+		l.custom_minimum_size = Vector2(64.0, 72.0)
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		l.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+		l.add_theme_font_size_override(&"font_size", 40)
+		l.add_theme_color_override(&"font_color", Color(0.85, 0.63, 0.25))
+		l.add_theme_stylebox_override(&"normal", sb)
+		cells.add_child(l)
+		_cells.append(l)
+	box.add_child(cells)
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 3
 	grid.add_theme_constant_override(&"h_separation", 10)
@@ -57,7 +72,7 @@ func _ready() -> void:
 	grid.add_child(_ok)
 	box.add_child(grid)
 	var close_btn: Button = _key("UI_CLOSE")
-	close_btn.custom_minimum_size = Vector2(316.0, 72.0)
+	close_btn.custom_minimum_size = Vector2(356.0, 72.0)
 	close_btn.pressed.connect(close)
 	box.add_child(close_btn)
 
@@ -65,8 +80,9 @@ func _ready() -> void:
 func _key(text: String) -> Button:
 	var b: Button = Button.new()
 	b.text = text
-	b.custom_minimum_size = Vector2(96.0, 80.0)
+	b.custom_minimum_size = Vector2(112.0, 80.0)
 	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_font_size_override(&"font_size", 22)
 	return b
 
 
@@ -134,13 +150,11 @@ func reject() -> void:
 
 
 func _update() -> void:
-	var shown: String = ""
 	for i: int in CODE_LEN:
 		if i < _code.length():
-			shown += (_code[i] if mode != Mode.ENTER else "•") + " "
+			_cells[i].text = _code[i] if mode != Mode.ENTER else "•"
 		else:
-			shown += "_ "
-	_display.text = shown.strip_edges()
+			_cells[i].text = ""
 	_ok.disabled = _code.length() != CODE_LEN
 
 

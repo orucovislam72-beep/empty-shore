@@ -9,7 +9,7 @@ extends Node3D
 ##   стена/проём — середина нижнего края, вдоль +X; крыша и лестница — центр клетки на уровне пола,
 ##   подъём в сторону −Z (поворот по направлению rot); дверь — нижний край петли, полотно вдоль +X.
 
-const MATERIAL_COLORS: Array[Color] = [Color(0.6, 0.42, 0.26), Color(0.58, 0.58, 0.56), Color(0.44, 0.48, 0.53)]
+const MATERIAL_COLORS: Array[Color] = [Color(0.66, 0.46, 0.28), Color(0.72, 0.7, 0.66), Color(0.5, 0.58, 0.66)]
 const WORN_TINT: Color = Color(0.5, 0.45, 0.42)
 const DOOR_SWING_S: float = 0.25
 
@@ -34,7 +34,7 @@ func bind(grid: BuildingGrid) -> void:
 		mat.albedo_color = MATERIAL_COLORS[m]
 		mat.vertex_color_use_as_albedo = true
 		mat.roughness = 0.9 if m < 2 else 0.55
-		mat.metallic = 0.0 if m < 2 else 0.35
+		mat.metallic = 0.0 if m < 2 else 0.15
 		_materials.append(mat)
 	grid.piece_added.connect(_on_added)
 	grid.piece_changed.connect(_on_changed)

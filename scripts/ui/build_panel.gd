@@ -12,8 +12,8 @@ signal material_selected(mat: int)
 signal action_pressed(action: String)
 
 const BTN_H: float = 64.0
-const PIECE_W: float = 100.0
-const ACTION_W: float = 104.0
+const PIECE_W: float = 96.0
+const ACTION_W: float = 100.0
 
 var panel: PanelContainer
 var _piece_btns: Dictionary = {}
@@ -84,7 +84,13 @@ func _button(key: String, w: float) -> Button:
 	b.text = key
 	b.custom_minimum_size = Vector2(w, BTN_H)
 	b.focus_mode = Control.FOCUS_NONE
-	b.clip_text = true
+	b.add_theme_font_size_override(&"font_size", 16)
+	# Узкие поля: подпись целиком, кнопка не меньше w (и 64 px в высоту — больше 48 dp).
+	for st_name: StringName in [&"normal", &"hover", &"pressed", &"disabled", &"hover_pressed"]:
+		var sb: StyleBox = b.get_theme_stylebox(st_name).duplicate()
+		sb.content_margin_left = 6.0
+		sb.content_margin_right = 6.0
+		b.add_theme_stylebox_override(st_name, sb)
 	return b
 
 
