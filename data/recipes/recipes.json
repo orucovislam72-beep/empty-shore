@@ -1,0 +1,13 @@
+{
+	"_comment": "Рецепты. station: \"\" — в руках, иначе тип станции рядом (campfire, workbench_1; workbench_2/3 — на следующих этапах). time — секунды. Порядок в списке = порядок в меню.",
+	"max_queue": 8,
+	"recipes": [
+		{"id": "stone_axe", "result": "stone_axe", "count": 1, "time": 4.0, "station": "", "ingredients": {"wood": 30, "stone": 15}},
+		{"id": "stone_pickaxe", "result": "stone_pickaxe", "count": 1, "time": 4.0, "station": "", "ingredients": {"wood": 30, "stone": 20}},
+		{"id": "campfire", "result": "campfire", "count": 1, "time": 3.0, "station": "", "ingredients": {"wood": 40, "stone": 10}},
+		{"id": "workbench_1", "result": "workbench_1", "count": 1, "time": 8.0, "station": "", "ingredients": {"wood": 150, "stone": 60}},
+		{"id": "metal", "result": "metal", "count": 1, "time": 3.0, "station": "campfire", "ingredients": {"metal_ore": 2, "wood": 1}},
+		{"id": "metal_axe", "result": "metal_axe", "count": 1, "time": 8.0, "station": "workbench_1", "ingredients": {"wood": 40, "metal": 25}},
+		{"id": "metal_pickaxe", "result": "metal_pickaxe", "count": 1, "time": 8.0, "station": "workbench_1", "ingredients": {"wood": 40, "metal": 30}}
+	]
+}
