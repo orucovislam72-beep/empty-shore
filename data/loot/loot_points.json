@@ -1,0 +1,12 @@
+{
+	"_comment": "Точки лута (этап 3). Расставляются по чанкам детерминированно по seed: chance[биом] — вероятность точки этого типа в чанке (64 × 64 м). table — таблица из loot_tables.json, slots — ячеек хранилища, respawn_s — через сколько секунд игры опустевшая точка снова наполняется (новый бросок по таблице). interact_radius_m — с какого расстояния можно обыскать.",
+	"seed_offset": 101,
+	"interact_radius_m": 2.4,
+	"types": [
+		{"id": "crate", "name": "LOOT_CRATE", "table": "crate_common", "slots": 6, "respawn_s": 1200.0, "chance": {"coast": 0.15, "plain": 0.35, "forest": 0.25, "mountain": 0.1}},
+		{"id": "barrel", "name": "LOOT_BARREL", "table": "barrel", "slots": 6, "respawn_s": 900.0, "chance": {"coast": 0.6, "plain": 0.1, "forest": 0.05, "mountain": 0.0}},
+		{"id": "crate_military", "name": "LOOT_CRATE_MILITARY", "table": "crate_military", "slots": 8, "respawn_s": 2400.0, "chance": {"coast": 0.0, "plain": 0.03, "forest": 0.03, "mountain": 0.3}}
+	],
+	"bag": {"name": "LOOT_BAG", "despawn_s": 1800.0},
+	"corpse": {"despawn_s": 600.0}
+}

@@ -1,0 +1,34 @@
+{
+	"_comment": "Таблицы лута (этап 3). rolls — сколько раз тянуть [min, max]; entries — предмет, вес, количество [min, max]; одна позиция может выпасть повторно. Выпавшее кладётся в хранилище точки лута при первом открытии. Никаких покупок и лутбоксов за деньги — только находки в мире.",
+	"tables": {
+		"crate_common": {"rolls": [2, 3], "entries": [
+			{"item": "wood", "weight": 10, "count": [40, 120]},
+			{"item": "stone", "weight": 8, "count": [30, 90]},
+			{"item": "metal", "weight": 6, "count": [5, 20]},
+			{"item": "arrow", "weight": 7, "count": [4, 12]},
+			{"item": "hide", "weight": 4, "count": [2, 6]},
+			{"item": "berries", "weight": 5, "count": [2, 6]},
+			{"item": "stone_spear", "weight": 3, "count": [1, 1]},
+			{"item": "stone_pickaxe", "weight": 2, "count": [1, 1]},
+			{"item": "bow", "weight": 1, "count": [1, 1]},
+			{"item": "gun_ammo", "weight": 1, "count": [2, 4]}
+		]},
+		"barrel": {"rolls": [1, 2], "entries": [
+			{"item": "metal_ore", "weight": 8, "count": [10, 30]},
+			{"item": "metal", "weight": 6, "count": [5, 15]},
+			{"item": "wood", "weight": 6, "count": [30, 80]},
+			{"item": "cooked_meat", "weight": 3, "count": [1, 3]},
+			{"item": "arrow", "weight": 4, "count": [3, 8]},
+			{"item": "gun_ammo", "weight": 1, "count": [1, 3]}
+		]},
+		"crate_military": {"rolls": [2, 3], "entries": [
+			{"item": "gun_ammo", "weight": 8, "count": [3, 8]},
+			{"item": "metal", "weight": 6, "count": [15, 40]},
+			{"item": "arrow", "weight": 5, "count": [8, 20]},
+			{"item": "bow", "weight": 3, "count": [1, 1]},
+			{"item": "crude_gun", "weight": 2, "count": [1, 1]},
+			{"item": "metal_axe", "weight": 2, "count": [1, 1]},
+			{"item": "metal_pickaxe", "weight": 2, "count": [1, 1]}
+		]}
+	}
+}
