@@ -1,6 +1,7 @@
 class_name DeployableView
 extends Node3D
-## Отрисовка размещённых объектов (Deployables): костёр с огнём и светом, верстак.
+## Отрисовка размещённых объектов (Deployables): костёр с огнём и светом, верстак,
+## с этапа 2 — ящик и знамя базы (со столкновениями, чтобы на них нельзя было встать внутрь).
 ## Слушает сигналы логики; общие сетки и материалы создаются один раз.
 ## Свет костра — один OmniLight3D без теней на каждый горящий костёр.
 
@@ -49,6 +50,12 @@ func _on_added(i: int) -> void:
 			root.add_child(light)
 		"workbench_1":
 			_add_mesh(root, "workbench")
+		"storage_box":
+			_add_mesh(root, "storage_box")
+			_add_box_body(root, Vector3(1.0, 0.7, 0.6), 0.35)
+		"base_banner":
+			_add_mesh(root, "base_banner")
+			_add_box_body(root, Vector3(0.3, 2.6, 0.3), 1.3)
 		_:
 			push_error("DeployableView: нет модели для %s" % kind)
 	add_child(root)
@@ -61,6 +68,8 @@ func _on_added(i: int) -> void:
 func _on_changed(i: int) -> void:
 	if i >= _nodes.size():
 		return
+	# Объект мог опуститься после обрушения пола.
+	_nodes[i].position = _dep.positions[i]
 	var lit: bool = _dep.is_lit(i)
 	if _flames[i] != null:
 		_flames[i].visible = lit
@@ -88,6 +97,17 @@ func _process(delta: float) -> void:
 		_flames[i].scale = Vector3(1.0, 1.0 + f * 0.12, 1.0)
 
 
+func _add_box_body(parent: Node3D, size: Vector3, center_y: float) -> void:
+	var body: StaticBody3D = StaticBody3D.new()
+	var col: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = size
+	col.shape = box
+	col.position = Vector3(0.0, center_y, 0.0)
+	body.add_child(col)
+	parent.add_child(body)
+
+
 func _add_mesh(parent: Node3D, key: String) -> void:
 	var mi: MeshInstance3D = MeshInstance3D.new()
 	mi.mesh = _mesh(key)
@@ -105,6 +125,10 @@ func _mesh(key: String) -> Mesh:
 				_meshes[key] = _make_flame()
 			"workbench":
 				_meshes[key] = _make_workbench()
+			"storage_box":
+				_meshes[key] = _make_storage_box()
+			"base_banner":
+				_meshes[key] = _make_banner()
 	return _meshes[key]
 
 
@@ -195,4 +219,66 @@ static func _make_workbench() -> ArrayMesh:
 	st.commit(mesh)
 	mesh.surface_set_material(0, _mat(Color(0.55, 0.38, 0.23)))
 	mesh.surface_set_material(1, _mat(Color(0.5, 0.52, 0.55)))
+	return mesh
+
+
+## Ящик: корпус, крышка и металлические уголки.
+static func _make_storage_box() -> ArrayMesh:
+	var mesh: ArrayMesh = ArrayMesh.new()
+	var st: SurfaceTool = SurfaceTool.new()
+	var body: BoxMesh = BoxMesh.new()
+	body.size = Vector3(1.0, 0.6, 0.6)
+	st.append_from(body, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, 0.3, 0.0)))
+	var lid: BoxMesh = BoxMesh.new()
+	lid.size = Vector3(1.04, 0.1, 0.64)
+	st.append_from(lid, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, 0.65, 0.0)))
+	st.commit(mesh)
+	st.clear()
+	var band: BoxMesh = BoxMesh.new()
+	band.size = Vector3(1.06, 0.06, 0.66)
+	for y: float in [0.15, 0.45]:
+		st.append_from(band, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, y, 0.0)))
+	var latch: BoxMesh = BoxMesh.new()
+	latch.size = Vector3(0.12, 0.14, 0.04)
+	st.append_from(latch, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, 0.55, 0.33)))
+	st.commit(mesh)
+	mesh.surface_set_material(0, _mat(Color(0.55, 0.38, 0.23)))
+	mesh.surface_set_material(1, _mat(Color(0.42, 0.44, 0.47)))
+	return mesh
+
+
+## Знамя базы: столб с перекладиной, полотнище в акцентном цвете, каменное основание.
+static func _make_banner() -> ArrayMesh:
+	var mesh: ArrayMesh = ArrayMesh.new()
+	var st: SurfaceTool = SurfaceTool.new()
+	var pole: CylinderMesh = CylinderMesh.new()
+	pole.top_radius = 0.06
+	pole.bottom_radius = 0.07
+	pole.height = 2.6
+	pole.radial_segments = 6
+	pole.rings = 0
+	st.append_from(pole, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, 1.3, 0.0)))
+	var bar: BoxMesh = BoxMesh.new()
+	bar.size = Vector3(1.0, 0.06, 0.06)
+	st.append_from(bar, 0, Transform3D(Basis.IDENTITY, Vector3(0.45, 2.45, 0.0)))
+	st.commit(mesh)
+	st.clear()
+	var cloth: BoxMesh = BoxMesh.new()
+	cloth.size = Vector3(0.85, 1.2, 0.03)
+	st.append_from(cloth, 0, Transform3D(Basis.IDENTITY, Vector3(0.5, 1.8, 0.0)))
+	st.commit(mesh)
+	st.clear()
+	var base: CylinderMesh = CylinderMesh.new()
+	base.top_radius = 0.3
+	base.bottom_radius = 0.38
+	base.height = 0.25
+	base.radial_segments = 7
+	base.rings = 0
+	st.append_from(base, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, 0.12, 0.0)))
+	st.commit(mesh)
+	mesh.surface_set_material(0, _mat(Color(0.45, 0.31, 0.19)))
+	var cm: StandardMaterial3D = _mat(Color(0.85, 0.63, 0.25))
+	cm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mesh.surface_set_material(1, cm)
+	mesh.surface_set_material(2, _mat(Color(0.45, 0.45, 0.47)))
 	return mesh
