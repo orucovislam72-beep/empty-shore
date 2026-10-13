@@ -1,0 +1,14 @@
+{
+	"_comment": "Животные (этап 3). Скорости — м/с, урон — единицы здоровья, время — секунды. behavior: timid (бродит, при угрозе убегает), predator (бродит, замечает игрока в sense_m и атакует; убегает, если здоровья меньше flee_hp), defensive (бродит, нападает, если игрок ближе sense_m или ударил). leash_m — дальше этого от игрока атака прекращается. drops — что лежит в туше. biomes — относительный вес появления в биоме. group — сколько появляется вместе. Появление — в кольце spawn.radius_min..radius_max вокруг игрока, не больше spawn.max_near животных в радиусе despawn_m; дальше despawn_m животное исчезает. think_hz — частота решений ИИ; движение — каждый кадр (steering по рельефу).",
+	"spawn": {"max_near": 10, "radius_min": 45.0, "radius_max": 140.0, "despawn_m": 220.0, "interval_s": 3.0},
+	"think_hz": 8.0,
+	"max_slope": 0.9,
+	"types": {
+		"deer": {"name": "ANIMAL_DEER", "behavior": "timid", "hp": 60.0, "walk": 1.5, "run": 7.5, "radius": 0.8, "center_h": 0.9, "sense_m": 16.0, "flee_s": 7.0, "group": 1,
+			"drops": {"meat": 6, "hide": 4}, "biomes": {"coast": 0.1, "plain": 1.4, "forest": 1.0, "mountain": 0.2}},
+		"wolf": {"name": "ANIMAL_WOLF", "behavior": "predator", "hp": 80.0, "walk": 1.8, "run": 7.0, "radius": 0.7, "center_h": 0.6, "sense_m": 22.0, "attack_range": 1.9, "damage": 9.0, "attack_cd": 1.2, "flee_hp": 0.25, "flee_s": 6.0, "leash_m": 45.0, "group": 2,
+			"drops": {"meat": 4, "hide": 3}, "biomes": {"coast": 0.0, "plain": 0.3, "forest": 0.8, "mountain": 0.6}},
+		"bear": {"name": "ANIMAL_BEAR", "behavior": "defensive", "hp": 250.0, "walk": 1.3, "run": 6.0, "radius": 1.1, "center_h": 0.9, "sense_m": 11.0, "attack_range": 2.3, "damage": 22.0, "attack_cd": 1.8, "flee_hp": 0.0, "flee_s": 0.0, "leash_m": 35.0, "group": 1,
+			"drops": {"meat": 14, "hide": 8}, "biomes": {"coast": 0.0, "plain": 0.05, "forest": 0.35, "mountain": 0.3}}
+	}
+}
