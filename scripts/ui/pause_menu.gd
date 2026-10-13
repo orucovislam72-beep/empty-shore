@@ -1,9 +1,11 @@
 class_name PauseMenu
 extends CanvasLayer
-## Меню паузы: продолжить, настройки, выход в главное меню. Ставит дерево сцены на паузу.
+## Меню паузы: продолжить, сохранить, настройки, выход в главное меню. Ставит дерево сцены на паузу.
+## Игра также сохраняется автоматически: при открытии паузы, выходе в меню и сворачивании.
 
 signal resumed
 signal quit_to_menu_requested
+signal save_requested
 
 var _panel: Control
 var _box: VBoxContainer
@@ -30,6 +32,7 @@ func _ready() -> void:
 	title.add_theme_font_size_override(&"font_size", 48)
 	_box.add_child(title)
 	_button("PAUSE_RESUME").pressed.connect(close)
+	_button("PAUSE_SAVE").pressed.connect(func() -> void: save_requested.emit())
 	_button("MENU_SETTINGS").pressed.connect(_open_settings)
 	_button("PAUSE_TO_MENU").pressed.connect(func() -> void: quit_to_menu_requested.emit())
 	_settings = SettingsMenu.new()

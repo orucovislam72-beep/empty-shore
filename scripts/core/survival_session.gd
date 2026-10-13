@@ -84,10 +84,6 @@ func autosave_interval() -> float:
 	return JsonData.get_float(_cfg, "autosave_interval_s", 60.0)
 
 
-func save_slot_name() -> String:
-	return String(_cfg.get("save_slot", "main"))
-
-
 func tick(delta: float) -> void:
 	play_time += delta
 	_swing_cd = maxf(_swing_cd - delta, 0.0)

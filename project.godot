@@ -10,7 +10,7 @@ config/description="Мобильная игра о выживании и стр�
 config/version="0.0.1"
 run/main_scene="res://scenes/main/main_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://assets/icons/app_icon.svg"
+config/icon="res://assets/icons/app_icon_512.png"
 boot_splash/bg_color=Color(0.07, 0.08, 0.09, 1)
 config/quit_on_go_back=false
 
@@ -110,6 +110,14 @@ toggle_autorun={
 pause={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"device":-1,"physical_keycode":4194305), Object(InputEventJoypadButton,"device":-1,"button_index":6)]
+}
+hotbar_next={
+"deadzone": 0.5,
+"events": [Object(InputEventMouseButton,"device":-1,"button_index":5,"pressed":true), Object(InputEventJoypadButton,"device":-1,"button_index":5)]
+}
+hotbar_prev={
+"deadzone": 0.5,
+"events": [Object(InputEventMouseButton,"device":-1,"button_index":4,"pressed":true), Object(InputEventJoypadButton,"device":-1,"button_index":13)]
 }
 toggle_debug={
 "deadzone": 0.5,
