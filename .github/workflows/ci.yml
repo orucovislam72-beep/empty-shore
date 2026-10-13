@@ -25,11 +25,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Кэш Godot
         id: cache-godot
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -60,23 +60,24 @@ jobs:
       KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
       KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
 
-      - uses: android-actions/setup-android@v3
-
+      # Android SDK предустановлен в образе ubuntu-24.04 (ANDROID_HOME); докачиваем нужные пакеты.
       - name: Пакеты Android SDK (версии из platform/android/java/app/config.gradle Godot 4.7.2)
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platform-tools" "build-tools;36.1.0" "platforms;android-36" "ndk;29.0.14206865" "cmake;3.22.1"
+          sdkm="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "${sdkm}" --licenses > /dev/null || true
+          "${sdkm}" "platform-tools" "build-tools;36.1.0" "platforms;android-36" "ndk;29.0.14206865" "cmake;3.22.1"
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "${GITHUB_ENV}"
 
       - name: Кэш Godot и шаблонов экспорта
         id: cache-godot
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/godot
@@ -133,7 +134,7 @@ jobs:
         if: always()
         run: rm -f "${RUNNER_TEMP}/release.keystore" "${RUNNER_TEMP}/debug.keystore"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: empty-shore-android-${{ github.sha }}
           path: build/android/*
