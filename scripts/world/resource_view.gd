@@ -3,12 +3,17 @@ extends Node3D
 ## Отрисовка ресурсных узлов (ResourceField) через MultiMesh: один MultiMeshInstance3D на тип,
 ## 1–2 draw call на тип. Истощённый узел скрывается нулевым масштабом экземпляра
 ## (без создания и удаления узлов сцены). Модели — простые процедурные low-poly.
+## С этапа 2 у деревьев и камней есть столкновения: статичный цилиндр на узел (collider_radius /
+## collider_height из data/balance/resources.json), тела сгруппированы по ячейкам сетки 16 м —
+## одно StaticBody3D на ячейку. Истощённый узел отключает свой цилиндр (CollisionShape3D.disabled).
 
 var _field: ResourceField
 var _mmis: Array[MultiMeshInstance3D] = []
 ## Для каждого узла поля — номер экземпляра в MultiMesh его типа.
 var _local: PackedInt32Array = PackedInt32Array()
 var _draw_distance: float = 200.0
+## Цилиндр-препятствие узла или null (кусты проходимы).
+var _colliders: Array[CollisionShape3D] = []
 
 
 func build(field: ResourceField) -> void:
@@ -31,10 +36,45 @@ func build(field: ResourceField) -> void:
 		mmi.multimesh = mm
 		add_child(mmi)
 		_mmis.append(mmi)
+	_build_colliders()
 	for i: int in field.size():
 		_update(i)
 	field.node_changed.connect(_update)
 	set_draw_distance(_draw_distance)
+
+
+func _build_colliders() -> void:
+	_colliders.resize(_field.size())
+	var bodies: Dictionary = {}
+	for i: int in _field.size():
+		var r: float = _field.collider_radius(i)
+		if r <= 0.0:
+			continue
+		var p: Vector3 = _field.positions[i]
+		var cell: Vector2i = Vector2i(int(floor(p.x / ResourceField.CELL)), int(floor(p.z / ResourceField.CELL)))
+		var body: StaticBody3D = bodies.get(cell)
+		if body == null:
+			body = StaticBody3D.new()
+			body.name = "Colliders_%d_%d" % [cell.x, cell.y]
+			add_child(body)
+			bodies[cell] = body
+		var shape: CylinderShape3D = CylinderShape3D.new()
+		shape.radius = r
+		shape.height = _field.collider_height(i)
+		var col: CollisionShape3D = CollisionShape3D.new()
+		col.shape = shape
+		col.position = p + Vector3(0.0, shape.height * 0.5, 0.0)
+		body.add_child(col)
+		_colliders[i] = col
+
+
+## Число включённых цилиндров (для отладки и тестов).
+func active_collider_count() -> int:
+	var n: int = 0
+	for c: CollisionShape3D in _colliders:
+		if c != null and not c.disabled:
+			n += 1
+	return n
 
 
 func set_draw_distance(distance: float) -> void:
@@ -52,6 +92,9 @@ func _update(i: int) -> void:
 	else:
 		xf = Transform3D(Basis.from_scale(Vector3.ZERO), _field.positions[i])
 	mm.set_instance_transform(_local[i], xf)
+	if i < _colliders.size() and _colliders[i] != null:
+		# Отложенно: событие может прийти во время шага физики.
+		_colliders[i].set_deferred(&"disabled", not _field.is_available(i))
 
 
 static func _flat_material(color: Color) -> StandardMaterial3D:
